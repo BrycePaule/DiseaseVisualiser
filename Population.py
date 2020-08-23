@@ -1,6 +1,6 @@
 import random
 
-from Settings import POPULATION_SIZE, CONTACTS_PER_DAY, INFECTION_CHANCE
+from Settings import POPULATION_SIZE, INFECTION_CHANCE, SECONDARY_INFECTION_CHANCE
 from Person import Person
 
 from Utilities import roll
@@ -10,41 +10,60 @@ class Population:
 
     def __init__(self):
         self.size = POPULATION_SIZE
-        
-        self.people = [Person(i) for i in range(self.size)]
-        self.total_infected = 0
-        self.infection_percentage = 0
 
-        # iterable
+        self.people = [Person(self, i) for i in range(self.size)]
+
+        self.infection_stats = {
+            'healthy': self.size,
+            'healthy_percentage': 0,
+
+            'infected_unknown': 0,
+            'infected_known': 0,
+            'infected_total': 0,
+            'infected_percentage': 0,
+
+            'recovered': 0,
+            'recovered_percentage': 0,
+
+            'dead': 0,
+            'dead_percentage': 0,
+        }
+
         self.index = 0
 
 
-    def calculate_infection_rate(self):
-        self.total_infected = len(list(filter(lambda x: x.status == 1, self.people)))
-        self.infection_percentage = int((self.total_infected / self.size) * 100)
+    def update_infection_stats(self):
+        self.infection_stats['infected_total'] = self.infection_stats['infected_unknown'] + self.infection_stats['infected_known']
+
+        self.infection_stats['infected_percentage'] = round((self.infection_stats['infected_total'] / self.size) * 100, 2)
+        self.infection_stats['healthy_percentage'] = round((self.infection_stats['healthy'] / self.size) * 100, 2)
+        self.infection_stats['recovered_percentage'] = round((self.infection_stats['recovered'] / self.size) * 100, 2)
+        self.infection_stats['dead_percentage'] = round((self.infection_stats['dead'] / self.size) * 100, 2)
 
 
-    def spread(self):
+    def pass_day(self):
         for person in self.people:
-            if person.status == 0: continue
 
-            flip = False
-            for _ in range(CONTACTS_PER_DAY):
-                flip = not flip
-                if flip:
-                    try:
-                        contact = self.people[random.randrange(0, person.id)]
-                    except ValueError:
-                        contact = self.people[random.randrange(person.id + 1, self.size)]
-                else:
-                    try:
-                        contact = self.people[random.randrange(person.id + 1, self.size)]
-                    except ValueError:
-                        contact = self.people[random.randrange(0, person.id)]
+            for _ in range(person.contacts_per_day):
+                contact = self.people[random.randrange(0, self.size)]
 
-                if contact.status == 0:
+                if person.status in [0, 3] and contact.status in [1, 2]:
                     if roll(INFECTION_CHANCE):
-                        contact.status = 1
+                        if person.status == 0:
+                            person.infect()
+                        elif person.status == 3:
+                            if roll(SECONDARY_INFECTION_CHANCE):
+                                person.infect()
+
+                if person.status in [1, 2] and contact.status in [0, 3]:
+                    if roll(INFECTION_CHANCE):
+                        if contact.status == 0:
+                            contact.infect()
+                        elif contact.status == 3:
+                            if roll(SECONDARY_INFECTION_CHANCE):
+                                contact.infect()
+
+            person.pass_day()
 
 
     def __iter__(self):
