@@ -21,6 +21,8 @@ class Visualiser:
         self.grid_surf = pygame.Surface((VISUALISER_WINDOW_SIZE, VISUALISER_WINDOW_SIZE))
 
         self.grid = [[Node() for _ in range(VISUALISER_NODE_WIDTH)] for _ in range(VISUALISER_NODE_WIDTH)]
+        self.grid_sorted = [[Node() for _ in range(VISUALISER_NODE_WIDTH)] for _ in range(VISUALISER_NODE_WIDTH)]
+        self.sort_toggle = False
 
         self.day_limit = DAY_LIMIT
         self.spread = DiseaseSpread()
@@ -37,8 +39,6 @@ class Visualiser:
         self.time_count = pygame.time.get_ticks()
 
 
-
-
     def events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -46,6 +46,8 @@ class Visualiser:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
+                if event.key == pygame.K_SPACE:
+                    self.sort_nodes()
 
 
     def draw(self):
@@ -71,8 +73,12 @@ class Visualiser:
 
         for y in range(VISUALISER_NODE_WIDTH):
             for x in range(VISUALISER_NODE_WIDTH):
-                node_surf = self.grid[y][x].draw()
-                self.grid_surf.blit(node_surf, (x * NODE_SIZE, y * NODE_SIZE))
+                if not self.sort_toggle:
+                    node_surf = self.grid[y][x].draw()
+                    self.grid_surf.blit(node_surf, (x * NODE_SIZE, y * NODE_SIZE))
+                else:
+                    node_surf = self.grid_sorted[y][x].draw()
+                    self.grid_surf.blit(node_surf, (x * NODE_SIZE, y * NODE_SIZE))
 
 
     def run(self):
@@ -192,3 +198,13 @@ class Visualiser:
                 node.convert_dead()
                 dead_needed -= 1
                 continue
+
+
+    def sort_nodes(self):
+        self.sort_toggle = not self.sort_toggle
+        sorted_flat_nodes = sorted([node for line in self.grid for node in line], key=lambda node: node.status, reverse=True)
+
+        bounds = [0, VISUALISER_NODE_WIDTH]
+        for i in range(VISUALISER_NODE_WIDTH):
+            self.grid_sorted[i] = sorted_flat_nodes[bounds[0]:bounds[1]]
+            bounds = [bounds[0] + 10, bounds[1] + 10]

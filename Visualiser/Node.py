@@ -43,7 +43,7 @@ class Node:
         self.colour = (new_r, new_g, new_b)
 
 
-    def shift_clamp_channel(self, channel1, channel2, max_step=2):
+    def shift_clamp_channel(self, channel1, channel2, max_step=3):
         if channel1 != channel2:
             if channel1 < channel2:
                 channel1 += min(max_step, max(0, abs(channel2 - channel1)))
@@ -68,3 +68,7 @@ class Node:
     def convert_dead(self):
         self.status = 4
         self.desired_colour = colour_lookup(self.status)
+
+
+    def __repr__(self):
+        return f'<N: {self.status}>'
