@@ -46,33 +46,33 @@ class Person:
 
     def infect(self):
         if self.status == 0:
-            self.population.infection_stats['healthy'] -= 1
+            self.population.stats['healthy'] -= 1
         elif self.status == 3:
-            self.population.infection_stats['recovered'] -= 1
+            self.population.stats['recovered'] -= 1
 
         self.status = 1
-        self.population.infection_stats['infected_unknown'] += 1
+        self.population.stats['infected_unknown'] += 1
         self.diagnose_days_left = DIAGNOSE_DAYS
 
     def infect_unknown_to_known(self):
         self.status = 2
-        self.population.infection_stats['infected_unknown'] -= 1
-        self.population.infection_stats['infected_known'] += 1
+        self.population.stats['infected_unknown'] -= 1
+        self.population.stats['infected_known'] += 1
         self.contacts_per_day = CONTACTS_PER_DAY_KNOWN
         self.recovery_days_left = RECOVERY_DAYS
 
     def recover(self):
         self.status = 3
-        self.population.infection_stats['infected_known'] -= 1
-        self.population.infection_stats['recovered'] += 1
+        self.population.stats['infected_known'] -= 1
+        self.population.stats['recovered'] += 1
 
     def death_check(self):
         return roll(FATALITY_RATE)
 
     def die(self):
         self.status = 4
-        self.population.infection_stats['infected_known'] -= 1
-        self.population.infection_stats['dead'] += 1
+        self.population.stats['infected_known'] -= 1
+        self.population.stats['dead'] += 1
 
     def __repr__(self):
         return f'<{self.name}, {self.id} , {status_to_text(self.status)}>'
