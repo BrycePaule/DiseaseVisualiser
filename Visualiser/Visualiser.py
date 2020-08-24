@@ -89,10 +89,10 @@ class Visualiser:
 
 
     def update_nodes(self):
-
-        for line in self.grid:
-            random.shuffle(line)
-        random.shuffle(self.grid)
+        #
+        # for line in self.grid:
+        #     random.shuffle(line)
+        # random.shuffle(self.grid)
 
         healthy, infected, recovered, dead = [], [], [], []
 
@@ -111,40 +111,39 @@ class Visualiser:
         excess_nodes = []
         healthy_diff, infected_diff, recovered_diff, dead_diff = 0, 0, 0, 0
 
-        curr_percent = int(len(healthy) / NODE_COUNT * 100)
+        curr_percent = round(len(healthy) / NODE_COUNT * 100, 2)
         if (spread_percent := self.daily_stats[self.day]['healthy_percentage']) < curr_percent:
-            excess_nodes += healthy[:int((curr_percent - spread_percent) / 100 * NODE_COUNT)]
+            excess_nodes += random.sample(healthy, round((curr_percent - spread_percent) / 100 * NODE_COUNT))
         else:
-            healthy_diff = int((spread_percent - curr_percent) / 100 * NODE_COUNT)
+            healthy_diff = (spread_percent - curr_percent) / 100 * NODE_COUNT
 
-        curr_percent = int(len(infected) / NODE_COUNT * 100)
+        curr_percent = round(len(infected) / NODE_COUNT * 100, 2)
         if (spread_percent := self.daily_stats[self.day]['infected_percentage']) < curr_percent:
-            excess_nodes += infected[:int((curr_percent - spread_percent) / 100 * NODE_COUNT)]
+            excess_nodes += random.sample(infected, round((curr_percent - spread_percent) / 100 * NODE_COUNT))
         else:
-            infected_diff = int((spread_percent - curr_percent) / 100 * NODE_COUNT)
+            infected_diff = (spread_percent - curr_percent) / 100 * NODE_COUNT
 
-        curr_percent = int(len(recovered) / NODE_COUNT * 100)
+        curr_percent = round(len(recovered) / NODE_COUNT * 100, 2)
         if (spread_percent := self.daily_stats[self.day]['recovered_percentage']) < curr_percent:
-            excess_nodes += recovered[:int((curr_percent - spread_percent) / 100 * NODE_COUNT)]
+            excess_nodes += random.sample(recovered, round((curr_percent - spread_percent) / 100 * NODE_COUNT))
         else:
-            recovered_diff = int((spread_percent - curr_percent) / 100 * NODE_COUNT)
+            recovered_diff = (spread_percent - curr_percent) / 100 * NODE_COUNT
 
-        curr_percent = int(len(dead) / NODE_COUNT * 100)
+        curr_percent = round(len(dead) / NODE_COUNT * 100, 2)
         if (spread_percent := self.daily_stats[self.day]['dead_percentage']) < curr_percent:
-            excess_nodes += dead[:int((curr_percent - spread_percent) / 100 * NODE_COUNT)]
+            excess_nodes += random.sample(dead, round((curr_percent - spread_percent) / 100 * NODE_COUNT))
         else:
-            dead_diff = int((spread_percent - curr_percent) / 100 * NODE_COUNT)
+            dead_diff = (spread_percent - curr_percent) / 100 * NODE_COUNT
 
         for node in excess_nodes:
-            for i in range(healthy_diff):
+            for i in range(round(healthy_diff)):
                 node.status = 0
-            for i in range(infected_diff):
+            for i in range(round(infected_diff)):
                 node.status = 1
-            for i in range(recovered_diff):
+            for i in range(round(recovered_diff)):
                 node.status = 3
-            for i in range(dead_diff):
+            for i in range(round(dead_diff)):
                 node.status = 4
-
 
         # print(f'healthy_diff: {healthy_diff}')
         # print(f'infected_diff: {infected_diff}')
