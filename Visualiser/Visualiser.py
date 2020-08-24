@@ -1,5 +1,6 @@
 import pygame
 import random
+import time
 
 from Visualiser.Node import Node
 from DiseaseAlgorithm.DiseaseSpread import DiseaseSpread
@@ -25,9 +26,17 @@ class Visualiser:
         self.spread = DiseaseSpread()
         self.day = 0
         self.daily_stats = {}
+        self.nodes = {
+            'healthy': ([], 0),
+            'infected': ([], 0),
+            'recovered': ([], 0),
+            'dead': ([], 0)
+        }
 
         self.time_step = 500   # 1000 = 1s
         self.time_count = pygame.time.get_ticks()
+
+
 
 
     def events(self):
@@ -41,6 +50,10 @@ class Visualiser:
 
     def draw(self):
         self.screen.fill(BG_COLOUR)
+
+        font = pygame.font.SysFont('Arial', 30)
+        text = font.render(f'Day: {self.day}', 1, (255, 255, 255))
+        self.screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, 20))
 
         self.draw_grid()
 
@@ -71,12 +84,21 @@ class Visualiser:
             self.clock.tick(FPS)
             self.events()
 
-
-            if pygame.time.get_ticks() > self.time_count + self.time_step:
-                self.time_count = pygame.time.get_ticks()
+            if self.time_to_pass_day():
                 self.daily_stats[self.day] = self.spread.pass_day(self.day)
 
+                # with open(f'./daily_stats.txt', mode='w') as f:
+                #     for key, value in self.daily_stats.items():
+                #         f.write(f'-----------------------------\n')
+                #         f.write(f'Day: {key}\n')
+                #
+                #         for k, v in value.items():
+                #             f.write(f'{k} - {v}\n')
+                #
+                #         f.write('\n')
+
                 if self.day > 0:
+                    self.calc_node_counts()
                     self.update_nodes()
 
                 self.day += 1
@@ -88,12 +110,15 @@ class Visualiser:
             #         return
 
 
-    def update_nodes(self):
-        #
-        # for line in self.grid:
-        #     random.shuffle(line)
-        # random.shuffle(self.grid)
+    def time_to_pass_day(self):
+        if pygame.time.get_ticks() > self.time_count + self.time_step:
+            self.time_count = pygame.time.get_ticks()
+            return True
+        else:
+            return False
 
+
+    def calc_node_counts(self):
         healthy, infected, recovered, dead = [], [], [], []
 
         for y in range(VISUALISER_NODE_WIDTH):
@@ -108,45 +133,62 @@ class Visualiser:
                 if node.status == 4:
                     dead.append(node)
 
+        self.nodes['healthy'] = (healthy, len(healthy))
+        self.nodes['infected'] = (infected, len(infected))
+        self.nodes['recovered'] = (recovered, len(recovered))
+        self.nodes['dead'] = (dead, len(dead))
+
+
+    def update_nodes(self):
         excess_nodes = []
-        healthy_diff, infected_diff, recovered_diff, dead_diff = 0, 0, 0, 0
+        healthy_needed, infected_needed, recovered_needed, dead_needed = 0, 0, 0, 0
 
-        curr_percent = round(len(healthy) / NODE_COUNT * 100, 2)
-        if (spread_percent := self.daily_stats[self.day]['healthy_percentage']) < curr_percent:
-            excess_nodes += random.sample(healthy, round((curr_percent - spread_percent) / 100 * NODE_COUNT))
-        else:
-            healthy_diff = (spread_percent - curr_percent) / 100 * NODE_COUNT
+        curr_percent = round(self.nodes['healthy'][1] / NODE_COUNT * 100, 2)
+        spread_percent = self.daily_stats[self.day]['healthy_percentage']
+        if spread_percent < curr_percent:
+            excess_nodes += random.sample(self.nodes['healthy'][0], round((curr_percent - spread_percent) / 100 * NODE_COUNT))
+        elif spread_percent > curr_percent:
+            healthy_needed = (spread_percent - curr_percent) / 100 * NODE_COUNT
 
-        curr_percent = round(len(infected) / NODE_COUNT * 100, 2)
-        if (spread_percent := self.daily_stats[self.day]['infected_percentage']) < curr_percent:
-            excess_nodes += random.sample(infected, round((curr_percent - spread_percent) / 100 * NODE_COUNT))
-        else:
-            infected_diff = (spread_percent - curr_percent) / 100 * NODE_COUNT
+        curr_percent = round(self.nodes['infected'][1] / NODE_COUNT * 100, 2)
+        spread_percent = self.daily_stats[self.day]['infected_percentage']
+        if spread_percent < curr_percent:
+            excess_nodes += random.sample(self.nodes['infected'][0], round((curr_percent - spread_percent) / 100 * NODE_COUNT))
+        elif spread_percent > curr_percent:
+            infected_needed = (spread_percent - curr_percent) / 100 * NODE_COUNT
 
-        curr_percent = round(len(recovered) / NODE_COUNT * 100, 2)
-        if (spread_percent := self.daily_stats[self.day]['recovered_percentage']) < curr_percent:
-            excess_nodes += random.sample(recovered, round((curr_percent - spread_percent) / 100 * NODE_COUNT))
-        else:
-            recovered_diff = (spread_percent - curr_percent) / 100 * NODE_COUNT
+        curr_percent = round(self.nodes['recovered'][1] / NODE_COUNT * 100, 2)
+        spread_percent = self.daily_stats[self.day]['recovered_percentage']
+        if spread_percent < curr_percent:
+            excess_nodes += random.sample(self.nodes['recovered'][0], round((curr_percent - spread_percent) / 100 * NODE_COUNT))
+        elif spread_percent > curr_percent:
+            recovered_needed = (spread_percent - curr_percent) / 100 * NODE_COUNT
 
-        curr_percent = round(len(dead) / NODE_COUNT * 100, 2)
-        if (spread_percent := self.daily_stats[self.day]['dead_percentage']) < curr_percent:
-            excess_nodes += random.sample(dead, round((curr_percent - spread_percent) / 100 * NODE_COUNT))
-        else:
-            dead_diff = (spread_percent - curr_percent) / 100 * NODE_COUNT
+        curr_percent = round(self.nodes['dead'][1] / NODE_COUNT * 100, 2)
+        spread_percent = self.daily_stats[self.day]['dead_percentage']
+        if spread_percent < curr_percent:
+            excess_nodes += random.sample(self.nodes['dead'][0], round((curr_percent - spread_percent) / 100 * NODE_COUNT))
+        elif spread_percent > curr_percent:
+            dead_needed = (spread_percent - curr_percent) / 100 * NODE_COUNT
+
 
         for node in excess_nodes:
-            for i in range(round(healthy_diff)):
-                node.status = 0
-            for i in range(round(infected_diff)):
-                node.status = 1
-            for i in range(round(recovered_diff)):
-                node.status = 3
-            for i in range(round(dead_diff)):
-                node.status = 4
+            if healthy_needed:
+                node.convert_healthy()
+                healthy_needed -= 1
+                continue
 
-        # print(f'healthy_diff: {healthy_diff}')
-        # print(f'infected_diff: {infected_diff}')
-        # print(f'recovered_diff: {recovered_diff}')
-        # print(f'dead_diff: {dead_diff}')
-        # print(f'Excess: {len(excess_nodes)}')
+            if infected_needed:
+                node.convert_infected()
+                infected_needed -= 1
+                continue
+
+            if recovered_needed:
+                node.convert_recovered()
+                recovered_needed -= 1
+                continue
+
+            if dead_needed:
+                node.convert_dead()
+                dead_needed -= 1
+                continue
