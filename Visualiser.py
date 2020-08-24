@@ -1,11 +1,8 @@
 from Population import Population
 from Grapher import Grapher
 from GraphKey import GraphKey
-from Settings import DAY_LIMIT
+from Settings.Settings import DAY_LIMIT
 from Utilities import days_to_readable_date_format, str_fill
-
-import matplotlib
-import matplotlib.pyplot as plt
 
 
 class Visualiser:
@@ -53,7 +50,6 @@ class Visualiser:
                     GraphKey('dead', '--k')
                 )
                 return
-
         return
 
 

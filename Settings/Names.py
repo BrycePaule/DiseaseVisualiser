@@ -1,7 +1,7 @@
 import random
 
 names = []
-with open('./names.txt', mode='r') as f:
+with open('./Settings/names.txt', mode='r') as f:
     for line in f:
         names.append(line.strip())
 

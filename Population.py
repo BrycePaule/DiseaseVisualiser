@@ -1,6 +1,6 @@
 import random
 
-from Settings import POPULATION_SIZE, INFECTION_CHANCE, SECONDARY_INFECTION_CHANCE
+from Settings.Settings import POPULATION_SIZE, INFECTION_CHANCE, SECONDARY_INFECTION_CHANCE
 from Person import Person
 
 from Utilities import roll
@@ -65,11 +65,9 @@ class Population:
 
             person.pass_day()
 
-
     def __iter__(self):
         self.index = 0
         return self
-
 
     def __next__(self):
         if self.index < len(self.people):
@@ -78,7 +76,6 @@ class Population:
             return selection
         else:
             raise StopIteration
-
 
     def __getitem__(self, item):
         return self.people[item]
