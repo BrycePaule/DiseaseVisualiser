@@ -1,6 +1,6 @@
 from Settings.Names import get_random_name
 from Utilities import roll, status_to_text
-from Settings.Settings import DIAGNOSE_DAYS, CONTACTS_PER_DAY_KNOWN, CONTACTS_PER_DAY_UNKNOWN_CARRIER, FATALITY_RATE, RECOVERY_DAYS
+from Settings.AlgorithmSettings import DIAGNOSE_DAYS, CONTACTS_PER_DAY_KNOWN, CONTACTS_PER_DAY_UNKNOWN_CARRIER, FATALITY_RATE, RECOVERY_DAYS
 
 
 class Person:

@@ -1,7 +1,7 @@
 import random
 
-from Settings.Settings import POPULATION_SIZE, INFECTION_CHANCE, SECONDARY_INFECTION_CHANCE
-from Person import Person
+from Settings.AlgorithmSettings import POPULATION_SIZE, INFECTION_CHANCE, SECONDARY_INFECTION_CHANCE
+from DiseaseAlgorithm.Person import Person
 
 from Utilities import roll
 
