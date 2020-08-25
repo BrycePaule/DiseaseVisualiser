@@ -1,6 +1,7 @@
 from Settings.Names import get_random_name
 from Utilities import roll, status_to_text
-from Settings.AlgorithmSettings import DIAGNOSE_DAYS, CONTACTS_PER_DAY_KNOWN, CONTACTS_PER_DAY_UNKNOWN_CARRIER, FATALITY_RATE, RECOVERY_DAYS
+
+from Settings.AlgorithmSettings import CONTACTS_PER_DAY_KNOWN, CONTACTS_PER_DAY_UNKNOWN_CARRIER
 
 
 class Person:
@@ -13,12 +14,12 @@ class Person:
         4 - dead
     """
 
-    def __init__(self, population, id):
-        self.id = id
+    def __init__(self, population, virus):
         self.population = population
+        self.virus = virus
+
         self.name = get_random_name()
         self.status = 0
-
         self.contacts_per_day = CONTACTS_PER_DAY_UNKNOWN_CARRIER
         self.diagnose_days_left = 0
         self.recovery_days_left = 0
@@ -44,33 +45,33 @@ class Person:
 
     def infect(self):
         if self.status == 0:
-            self.population.stats['healthy'] -= 1
+            self.population.virus_stats['healthy'] -= 1
         elif self.status == 3:
-            self.population.stats['recovered'] -= 1
+            self.population.virus_stats['recovered'] -= 1
 
         self.status = 1
-        self.population.stats['infected_unknown'] += 1
-        self.diagnose_days_left = DIAGNOSE_DAYS
+        self.population.virus_stats['infected_unknown'] += 1
+        self.diagnose_days_left = self.virus.diagnose_days
 
     def infect_unknown_to_known(self):
         self.status = 2
-        self.population.stats['infected_unknown'] -= 1
-        self.population.stats['infected_known'] += 1
+        self.population.virus_stats['infected_unknown'] -= 1
+        self.population.virus_stats['infected_known'] += 1
         self.contacts_per_day = CONTACTS_PER_DAY_KNOWN
-        self.recovery_days_left = RECOVERY_DAYS
+        self.recovery_days_left = self.virus.recovery_days
 
     def recover(self):
         self.status = 3
-        self.population.stats['infected_known'] -= 1
-        self.population.stats['recovered'] += 1
+        self.population.virus_stats['infected_known'] -= 1
+        self.population.virus_stats['recovered'] += 1
 
     def death_check(self):
-        return roll(FATALITY_RATE)
+        return roll(self.virus.fatality_chance)
 
     def die(self):
         self.status = 4
-        self.population.stats['infected_known'] -= 1
-        self.population.stats['dead'] += 1
+        self.population.virus_stats['infected_known'] -= 1
+        self.population.virus_stats['dead'] += 1
 
     def __repr__(self):
-        return f'<{self.name}, {self.id} , {status_to_text(self.status)}>'
+        return f'<{self.name}, {status_to_text(self.status)}>'

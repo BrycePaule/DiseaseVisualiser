@@ -4,8 +4,8 @@ import numpy as np
 import cProfile
 
 from Visualiser.Node import Node
-from DiseaseAlgorithm.DiseaseSpread import DiseaseSpread
-from DiseaseAlgorithm.DiseaseManager import DiseaseManager
+from DiseaseAlgorithm.VirusSpreadProjection import VirusSpreadProjection
+from DiseaseAlgorithm.VirusManager import VirusManager
 
 from Settings.VisualiserSettings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from Settings.VisualiserSettings import VIS_WINDOW_SIZE, VIS_NODE_WIDTH, NODE_SIZE, NODE_COUNT
@@ -33,8 +33,8 @@ class Visualiser:
         self.sort_toggle = False
         self.nodes_updated_since_draw = True
 
-        self.disease_manager = DiseaseManager()
-        self.spread = DiseaseSpread(self.disease_manager.diseases['COVID-19'])
+        self.virus_manager = VirusManager()
+        self.virus_spread_projection = VirusSpreadProjection(self.virus_manager.diseases['COVID-19'])
         self.day_limit = DAY_LIMIT
         self.day = 0
         self.daily_stats = {}
@@ -78,7 +78,7 @@ class Visualiser:
         self.profiler.enable()
 
         for i in range(STARTING_INFECTIONS):
-            self.spread.population.people[i].infect()
+            self.virus_spread_projection.population.people[i].infect()
 
         while self.day <= self.day_limit:
             self.clock.tick(FPS)
@@ -88,13 +88,13 @@ class Visualiser:
                 if TIME_SCALE_ANIM and self.animate_nodes:
                     if self.day < TIMED_DAYS:
                         start = pygame.time.get_ticks()
-                        self.daily_stats[self.day] = self.spread.pass_day(self.day)
+                        self.daily_stats[self.day] = self.virus_spread_projection.pass_day(self.day)
                         runtime = pygame.time.get_ticks() - start
 
                         self.disease_algorithm_runtime = (self.disease_algorithm_runtime + runtime) // 2
                         self.update_node_animation_time()
 
-                self.daily_stats[self.day] = self.spread.pass_day(self.day)
+                self.daily_stats[self.day] = self.virus_spread_projection.pass_day(self.day)
 
                 # self.write_daily_stats_to_file()
 

@@ -1,11 +1,11 @@
 import random
+import time
 
 def roll(chance):
     throw = int(10000 * random.random())
     if throw < chance * 100:
         return True
-    else:
-        return False
+    return False
 
 def str_fill(string, n):
     if len(string) < n:
@@ -56,3 +56,12 @@ def status_to_text(status):
         4: 'Dead',
     }
     return states[status]
+
+""" VERY INTERESTING """
+def timer(func):
+    def f(*args, **kwargs):
+        start = time.time()
+        rv = func(*args, **kwargs)
+        print(f'Elapsed({func.__name__}): {time.time() - start}')
+        return rv
+    return f

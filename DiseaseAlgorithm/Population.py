@@ -9,12 +9,12 @@ from Utilities import roll
 
 class Population:
 
-    def __init__(self):
+    def __init__(self, virus):
+        self.index = 0
+        self.virus = virus
         self.size = POPULATION_SIZE
-
-        self.people = np.array([Person(self, i) for i in range(self.size)])
-
-        self.stats = {
+        self.people = np.array([Person(self, self.virus) for _ in range(self.size)])
+        self.virus_stats = {
             'healthy': self.size,
             'healthy_percentage': 0,
 
@@ -30,16 +30,14 @@ class Population:
             'dead_percentage': 0,
         }
 
-        self.index = 0
-
 
     def update_infection_stats(self):
-        self.stats['infected_total'] = self.stats['infected_unknown'] + self.stats['infected_known']
+        self.virus_stats['infected_total'] = self.virus_stats['infected_unknown'] + self.virus_stats['infected_known']
 
-        self.stats['infected_percentage'] = round((self.stats['infected_total'] / self.size) * 100, 2)
-        self.stats['healthy_percentage'] = round((self.stats['healthy'] / self.size) * 100, 2)
-        self.stats['recovered_percentage'] = round((self.stats['recovered'] / self.size) * 100, 2)
-        self.stats['dead_percentage'] = round((self.stats['dead'] / self.size) * 100, 2)
+        self.virus_stats['infected_percentage'] = round((self.virus_stats['infected_total'] / self.size) * 100, 2)
+        self.virus_stats['healthy_percentage'] = round((self.virus_stats['healthy'] / self.size) * 100, 2)
+        self.virus_stats['recovered_percentage'] = round((self.virus_stats['recovered'] / self.size) * 100, 2)
+        self.virus_stats['dead_percentage'] = round((self.virus_stats['dead'] / self.size) * 100, 2)
 
 
     def pass_day(self):
@@ -49,18 +47,18 @@ class Population:
 
                 if person.status in [0, 3] and contact.status in [1, 2]:
                     if person.status == 0:
-                        if roll(INFECTION_CHANCE):
+                        if roll(self.virus.infection_chance):
                             person.infect()
                     elif person.status == 3:
-                        if roll(SECONDARY_INFECTION_CHANCE):
+                        if roll(self.virus.reinfection_chance):
                             person.infect()
 
                 if person.status in [1, 2] and contact.status in [0, 3]:
                     if contact.status == 0:
-                        if roll(INFECTION_CHANCE):
+                        if roll(self.virus.infection_chance):
                             contact.infect()
                     elif contact.status == 3:
-                        if roll(SECONDARY_INFECTION_CHANCE):
+                        if roll(self.virus.reinfection_chance):
                             contact.infect()
 
             person.pass_day()

@@ -2,13 +2,13 @@ from DiseaseAlgorithm.Population import Population
 from DiseaseAlgorithm.Grapher import Grapher
 from DiseaseAlgorithm.GraphKey import GraphKey
 from Settings.AlgorithmSettings import DAY_LIMIT
-from Utilities import days_to_readable_date_format, str_fill
+from Utilities import days_to_readable_date_format, str_fill, timer
 
-class DiseaseSpread:
+class VirusSpreadProjection:
 
-    def __init__(self, disease):
-        self.population = Population()
-        self.disease = disease
+    def __init__(self, virus):
+        self.virus = virus
+        self.population = Population(self.virus)
         self.daily_stats = {}
 
         self.grapher = Grapher(self.daily_stats)
@@ -18,7 +18,7 @@ class DiseaseSpread:
         self.population.pass_day()
         self.population.update_infection_stats()
 
-        self.daily_stats[day] = self.population.stats.copy()
+        self.daily_stats[day] = self.population.virus_stats.copy()
 
         print(f'Day: {day} {days_to_readable_date_format(day)}')
         print(f'    - {str_fill("Healthy", 10)} {self.daily_stats[day]["healthy_percentage"]}% ({self.daily_stats[day]["healthy"]}/{self.population.size})')
@@ -29,7 +29,7 @@ class DiseaseSpread:
         # if day % 50 == 0 or day == DAY_LIMIT:
         #     self.graph_result(day)
 
-        return self.population.stats
+        return self.population.virus_stats
 
 
     def is_finished(self, day):

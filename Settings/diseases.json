@@ -1,1 +1,1 @@
-{"Cold": {"name": "Cold", "diagnose_days": 5, "recovery_days": 2, "infection_chance": 0, "re_infection_chance": 7, "fatality_chance": 5}, "COVID-19": {"name": "COVID-19", "diagnose_days": 3.27, "recovery_days": 1, "infection_chance": 1, "re_infection_chance": 14, "fatality_chance": 30}}
+{"COVID-19": {"name": "COVID-19", "diagnose_days": 14, "recovery_days": 30, "infection_chance": 3.27, "reinfection_chance": 1, "fatality_chance": 1},"Cold": {"name": "Cold", "diagnose_days": 7, "recovery_days": 5, "infection_chance": 5, "reinfection_chance": 1, "fatality_chance": 0}}

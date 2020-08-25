@@ -1,8 +1,8 @@
 import cProfile
 
-from DiseaseAlgorithm.DiseaseSpread import DiseaseSpread
+from DiseaseAlgorithm.VirusSpreadProjection import VirusSpreadProjection
 from Visualiser.Visualiser import Visualiser
-from DiseaseAlgorithm.DiseaseManager import DiseaseManager
+from DiseaseAlgorithm.VirusManager import VirusManager
 
 profiler = cProfile.Profile()
 

@@ -1,8 +1,8 @@
 import json
 
-from DiseaseAlgorithm.DiseaseType import DiseaseType
+from DiseaseAlgorithm.Virus import Virus
 
-class DiseaseManager:
+class VirusManager:
 
     def __init__(self):
         self.diseases = self.import_diseases()
@@ -15,12 +15,12 @@ class DiseaseManager:
             data = json.load(in_file)
 
             for disease_name, disease_stats in data.items():
-                diseases[disease_name] = DiseaseType(
+                diseases[disease_name] = Virus(
                     name=disease_stats['name'],
                     diagnose_days=disease_stats['diagnose_days'],
                     recovery_days=disease_stats['recovery_days'],
                     infection_chance=disease_stats['infection_chance'],
-                    re_infection_chance=disease_stats['re_infection_chance'],
+                    reinfection_chance=disease_stats['reinfection_chance'],
                     fatality_chance=disease_stats['fatality_chance'],
                 )
 
@@ -28,9 +28,9 @@ class DiseaseManager:
 
 
 
-    def create(self, name, diagnose_days, recovery_days, infection_chance, re_infection_chance, fatality_chance):
+    def create(self, name, diagnose_days, recovery_days, infection_chance, reinfection_chance, fatality_chance):
         if name not in self.diseases:
-            self.diseases[f'{name}'] = DiseaseType(name, infection_chance, re_infection_chance, fatality_chance, diagnose_days, recovery_days)
+            self.diseases[f'{name}'] = Virus(name, diagnose_days, recovery_days, infection_chance, reinfection_chance, fatality_chance)
 
         self.export_diseases()
 
