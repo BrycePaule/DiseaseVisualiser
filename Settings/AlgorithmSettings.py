@@ -1,6 +1,6 @@
 
 # VISUALISER
-DAY_LIMIT = 500
+DAY_LIMIT = 999999999
 
 
 # Population
@@ -20,10 +20,10 @@ Australia - 3.27
 Global mean - 3.28
 Global median - 2.79
 """
-DIAGNOSE_DAYS = 7
-RECOVERY_DAYS = 30
-INFECTION_CHANCE = 3.27   # percentage (R0 / RNaught)
-SECONDARY_INFECTION_CHANCE = 3.27    # percentage
+DIAGNOSE_DAYS = 14
+RECOVERY_DAYS = 5
+INFECTION_CHANCE = 3   # percentage (R0 / RNaught)
+SECONDARY_INFECTION_CHANCE = 3    # percentage
 FATALITY_RATE = 1   # percentage
 
 

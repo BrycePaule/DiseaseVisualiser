@@ -4,7 +4,6 @@ from DiseaseAlgorithm.GraphKey import GraphKey
 from Settings.AlgorithmSettings import DAY_LIMIT
 from Utilities import days_to_readable_date_format, str_fill
 
-
 class DiseaseSpread:
 
     def __init__(self):
@@ -26,8 +25,8 @@ class DiseaseSpread:
         print(f'    - {str_fill("Recovered", 10)} {self.daily_stats[day]["recovered_percentage"]}% ({self.daily_stats[day]["recovered"]}/{self.population.size})')
         print(f'    - {str_fill("Dead", 10)} {self.daily_stats[day]["dead_percentage"]}% ({self.daily_stats[day]["dead"]}/{self.population.size})')
 
-        if day % 50 == 0:
-            self.graph_result(day)
+        # if day % 50 == 0 or day == DAY_LIMIT:
+        #     self.graph_result(day)
 
         return self.population.stats
 

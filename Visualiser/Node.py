@@ -1,6 +1,6 @@
 import pygame
 
-from Settings.VisualiserSettings import NODE_COUNT, NODE_SIZE, VISUALISER_WINDOW_SIZE, GRID_COLOUR
+from Settings.VisualiserSettings import NODE_COUNT, NODE_SIZE, VIS_WINDOW_SIZE, GRID_COLOUR, ANIMATE_NODES
 from Visualiser.ColourLookup import colour_lookup
 
 class Node:
@@ -22,13 +22,16 @@ class Node:
         self.height = self.surface.get_height()
         self.rect = pygame.Rect(0, 0, self.width, self.height)
 
+        self.animate = ANIMATE_NODES
         self.colour = colour_lookup(self.status)
         self.desired_colour = colour_lookup(self.status)
 
 
     def draw(self):
-        if self.colour != self.desired_colour:
-            self.shift_overall_colour()
+        if self.animate:
+            if self.colour != self.desired_colour:
+                self.shift_overall_colour()
+
         self.surface.fill(self.colour)
         pygame.draw.rect(self.surface, GRID_COLOUR, self.rect, 1)
 
@@ -55,19 +58,31 @@ class Node:
 
     def convert_healthy(self):
         self.status = 0
-        self.desired_colour = colour_lookup(self.status)
+        if self.animate:
+            self.desired_colour = colour_lookup(self.status)
+        else:
+            self.colour = colour_lookup(self.status)
 
     def convert_infected(self):
         self.status = 1
-        self.desired_colour = colour_lookup(self.status)
+        if self.animate:
+            self.desired_colour = colour_lookup(self.status)
+        else:
+            self.colour = colour_lookup(self.status)
 
     def convert_recovered(self):
         self.status = 3
-        self.desired_colour = colour_lookup(self.status)
+        if self.animate:
+            self.desired_colour = colour_lookup(self.status)
+        else:
+            self.colour = colour_lookup(self.status)
 
     def convert_dead(self):
         self.status = 4
-        self.desired_colour = colour_lookup(self.status)
+        if self.animate:
+            self.desired_colour = colour_lookup(self.status)
+        else:
+            self.colour = colour_lookup(self.status)
 
 
     def __repr__(self):
