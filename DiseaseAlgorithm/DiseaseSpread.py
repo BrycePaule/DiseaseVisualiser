@@ -6,8 +6,9 @@ from Utilities import days_to_readable_date_format, str_fill
 
 class DiseaseSpread:
 
-    def __init__(self):
+    def __init__(self, disease):
         self.population = Population()
+        self.disease = disease
         self.daily_stats = {}
 
         self.grapher = Grapher(self.daily_stats)

@@ -5,6 +5,7 @@ import cProfile
 
 from Visualiser.Node import Node
 from DiseaseAlgorithm.DiseaseSpread import DiseaseSpread
+from DiseaseAlgorithm.DiseaseManager import DiseaseManager
 
 from Settings.VisualiserSettings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from Settings.VisualiserSettings import VIS_WINDOW_SIZE, VIS_NODE_WIDTH, NODE_SIZE, NODE_COUNT
@@ -19,11 +20,11 @@ class Visualiser:
     pygame.font.init()
     pygame.display.set_caption('Disease Spread Visualiser')
 
-    def __init__(self, ):
+    def __init__(self):
         self.clock = pygame.time.Clock()
-
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.grid_surf = pygame.Surface((VIS_WINDOW_SIZE, VIS_WINDOW_SIZE))
+
         self.font = pygame.font.SysFont('Arial', 30)
         self.day_text = ''
 
@@ -32,8 +33,9 @@ class Visualiser:
         self.sort_toggle = False
         self.nodes_updated_since_draw = True
 
+        self.disease_manager = DiseaseManager()
+        self.spread = DiseaseSpread(self.disease_manager.diseases['COVID-19'])
         self.day_limit = DAY_LIMIT
-        self.spread = DiseaseSpread()
         self.day = 0
         self.daily_stats = {}
         self.nodes = {
@@ -50,7 +52,6 @@ class Visualiser:
 
         self.animate_nodes = ANIMATE_NODES
         self.disease_algorithm_runtime = 0
-
 
         # PROFILING
         self.profiler = cProfile.Profile()
@@ -258,5 +259,5 @@ class Visualiser:
 
     def update_node_animation_time(self, time=0):
         for node in self.grid:
-            node.colour_shift_max_step = 255 * FPS // (self.disease_algorithm_runtime + self.time_step)
+            node.colour_shift_max_step = 255 * FPS // (self.disease_algorithm_runtime + self.time_step) // 5
             # node.colour_shift_max_step = 5

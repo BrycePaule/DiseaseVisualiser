@@ -6,9 +6,6 @@ from DiseaseAlgorithm.DiseaseManager import DiseaseManager
 
 profiler = cProfile.Profile()
 
-DM = DiseaseManager()
-
-spread = DiseaseSpread()
 vis = Visualiser()
 
 profiler.enable()
