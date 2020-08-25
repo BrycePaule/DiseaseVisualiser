@@ -1,5 +1,7 @@
 import pygame
 import random
+import numpy as np
+import cProfile
 
 from Visualiser.Node import Node
 from DiseaseAlgorithm.DiseaseSpread import DiseaseSpread
@@ -23,8 +25,8 @@ class Visualiser:
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.grid_surf = pygame.Surface((VIS_WINDOW_SIZE, VIS_WINDOW_SIZE))
 
-        self.grid = [[Node() for _ in range(VIS_NODE_WIDTH)] for _ in range(VIS_NODE_WIDTH)]
-        self.grid_sorted = [[Node() for _ in range(VIS_NODE_WIDTH)] for _ in range(VIS_NODE_WIDTH)]
+        self.grid = np.array([Node() for _ in range(VIS_NODE_WIDTH * VIS_NODE_WIDTH)])
+        self.grid_sorted = np.array([None for _ in range(VIS_NODE_WIDTH * VIS_NODE_WIDTH)])
         self.sort_toggle = False
         self.nodes_updated_since_draw = False
 
@@ -48,18 +50,30 @@ class Visualiser:
         self.disease_algorithm_runtime = 0
 
 
+        # PROFILING
+        self.profiler = cProfile.Profile()
+
+
     def events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
+                self.profiler.disable()
+                self.profiler.print_stats(sort='cumtime')
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
+                    self.profiler.disable()
+                    self.profiler.print_stats(sort='cumtime')
                 if event.key == pygame.K_SPACE:
+                    if self.sort_toggle:
+                        np.random.shuffle(self.grid)
                     self.sort_toggle = not self.sort_toggle
 
 
     def run(self):
+        self.profiler.enable()
+
         for i in range(1):
             self.spread.population.people[i].infect()
 
@@ -113,17 +127,22 @@ class Visualiser:
     def draw_grid(self):
         self.grid_surf.fill((0, 0, 0))
 
+        node_index = 0
+
         for y in range(VIS_NODE_WIDTH):
             for x in range(VIS_NODE_WIDTH):
+
                 if not self.sort_toggle:
-                    node_surf = self.grid[y][x].draw()
+                    node_surf = self.grid[node_index].draw()
                     self.grid_surf.blit(node_surf, (x * NODE_SIZE, y * NODE_SIZE))
 
                 else:
                     if self.nodes_updated_since_draw:
                         self.nodes_sort()
-                    node_surf = self.grid_sorted[y][x].draw()
+                    node_surf = self.grid_sorted[node_index].draw()
                     self.grid_surf.blit(node_surf, (x * NODE_SIZE, y * NODE_SIZE))
+
+                node_index += 1
 
         self.nodes_updated_since_draw = False
 
@@ -153,9 +172,11 @@ class Visualiser:
             'total': {'nodes': [], 'excess': []},
         }
 
+
+        node_index = 0
         for y in range(VIS_NODE_WIDTH):
             for x in range(VIS_NODE_WIDTH):
-                node = self.grid[y][x]
+                node = self.grid[node_index]
                 if node.status == 0:
                     self.nodes['healthy']['nodes'].append(node)
                     self.nodes['total']['nodes'].append(node)
@@ -168,6 +189,8 @@ class Visualiser:
                 if node.status == 4:
                     self.nodes['dead']['nodes'].append(node)
                     self.nodes['total']['nodes'].append(node)
+
+                node_index += 1
 
         self.nodes['healthy']['percentage'] = round((len(self.nodes['healthy']['nodes']) / len(self.nodes['total']['nodes']) * 100), 2)
         self.nodes['infected']['percentage'] = round((len(self.nodes['infected']['nodes']) / len(self.nodes['total']['nodes']) * 100), 2)
@@ -184,7 +207,6 @@ class Visualiser:
         ]
 
         for node, percent in node_types:
-
             spread_percent = self.daily_stats[self.day][percent]
             excess_node_count = round((self.nodes[node]['percentage'] - spread_percent) / 100 * NODE_COUNT)
 
@@ -221,12 +243,7 @@ class Visualiser:
 
 
     def nodes_sort(self):
-        sorted_flat_nodes = sorted([node for line in self.grid for node in line], key=lambda node: node.status, reverse=True)
-
-        bounds = [0, VIS_NODE_WIDTH]
-        for i in range(VIS_NODE_WIDTH):
-            self.grid_sorted[i] = sorted_flat_nodes[bounds[0]:bounds[1]]
-            bounds = [bounds[0] + 10, bounds[1] + 10]
+        self.grid_sorted = np.array(sorted(self.grid, key=lambda node: node.status, reverse=True))
 
 
     def write_daily_stats_to_file(self):

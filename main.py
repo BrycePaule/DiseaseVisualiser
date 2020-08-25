@@ -7,10 +7,12 @@ profiler = cProfile.Profile()
 
 spread = DiseaseSpread()
 vis = Visualiser()
+
+profiler.enable()
 vis.run()
 
 
-# profiler.enable()
+
 # spread.run()
 # profiler.disable()
 # profiler.print_stats()
