@@ -8,8 +8,8 @@ from DiseaseAlgorithm.DiseaseSpread import DiseaseSpread
 
 from Settings.VisualiserSettings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from Settings.VisualiserSettings import VIS_WINDOW_SIZE, VIS_NODE_WIDTH, NODE_SIZE, NODE_COUNT
-from Settings.VisualiserSettings import ALGORITHM_CALL_STEP, TIMED_DAYS, ANIMATE_NODES
-from Settings.VisualiserSettings import BG_COLOUR, GRID_BORDER_COLOUR
+from Settings.VisualiserSettings import MIN_ALGORITHM_CALL_STEP, TIMED_DAYS, ANIMATE_NODES
+from Settings.VisualiserSettings import BG_COLOUR, GRID_BORDER_COLOUR, TIME_SCALE_ANIM
 from Settings.AlgorithmSettings import DAY_LIMIT, STARTING_INFECTIONS
 
 
@@ -45,7 +45,7 @@ class Visualiser:
             'total': {'nodes': [], 'excess': []},
         }
 
-        self.time_step = ALGORITHM_CALL_STEP   # 1000 = 1s
+        self.time_step = MIN_ALGORITHM_CALL_STEP   # 1000 = 1s
         self.time_count = pygame.time.get_ticks()
 
         self.animate_nodes = ANIMATE_NODES
@@ -84,7 +84,7 @@ class Visualiser:
             self.events()
 
             if self.day_has_passed():
-                if self.animate_nodes:
+                if TIME_SCALE_ANIM and self.animate_nodes:
                     if self.day < TIMED_DAYS:
                         start = pygame.time.get_ticks()
                         self.daily_stats[self.day] = self.spread.pass_day(self.day)
@@ -92,10 +92,8 @@ class Visualiser:
 
                         self.disease_algorithm_runtime = (self.disease_algorithm_runtime + runtime) // 2
                         self.update_node_animation_time()
-                    else:
-                        self.daily_stats[self.day] = self.spread.pass_day(self.day)
-                else:
-                    self.daily_stats[self.day] = self.spread.pass_day(self.day)
+
+                self.daily_stats[self.day] = self.spread.pass_day(self.day)
 
                 # self.write_daily_stats_to_file()
 
@@ -261,3 +259,4 @@ class Visualiser:
     def update_node_animation_time(self, time=0):
         for node in self.grid:
             node.colour_shift_max_step = 255 * FPS // (self.disease_algorithm_runtime + self.time_step)
+            # node.colour_shift_max_step = 5

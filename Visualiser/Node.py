@@ -1,6 +1,6 @@
 import pygame
 
-from Settings.VisualiserSettings import NODE_COUNT, NODE_SIZE, VIS_WINDOW_SIZE, GRID_COLOUR, ANIMATE_NODES
+from Settings.VisualiserSettings import NODE_COUNT, NODE_SIZE, VIS_WINDOW_SIZE, GRID_COLOUR, ANIMATE_NODES, NODE_BORDER
 from Visualiser.ColourLookup import colour_lookup
 
 from functools import total_ordering
@@ -25,11 +25,12 @@ class Node:
         self.height = self.surface.get_height()
         self.rect = pygame.Rect(0, 0, self.width, self.height)
 
+        self.border = NODE_BORDER
         self.animate = ANIMATE_NODES
         self.colour = colour_lookup(self.status)
         self.desired_colour = colour_lookup(self.status)
 
-        self.colour_shift_max_step = 3
+        self.colour_shift_max_step = 10
 
 
     def draw(self, no_anim=False):
@@ -41,7 +42,8 @@ class Node:
             self.colour = colour_lookup(self.status)
 
         self.surface.fill(self.colour)
-        pygame.draw.rect(self.surface, GRID_COLOUR, self.rect, 1)
+        if self.border:
+            pygame.draw.rect(self.surface, GRID_COLOUR, self.rect, 1)
 
         return self.surface
 
