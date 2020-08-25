@@ -20,6 +20,7 @@ Australia - 3.27
 Global mean - 3.28
 Global median - 2.79
 """
+STARTING_INFECTIONS = 1
 DIAGNOSE_DAYS = 14
 RECOVERY_DAYS = 5
 INFECTION_CHANCE = 3   # percentage (R0 / RNaught)

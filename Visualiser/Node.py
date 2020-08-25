@@ -3,6 +3,9 @@ import pygame
 from Settings.VisualiserSettings import NODE_COUNT, NODE_SIZE, VIS_WINDOW_SIZE, GRID_COLOUR, ANIMATE_NODES
 from Visualiser.ColourLookup import colour_lookup
 
+from functools import total_ordering
+
+@total_ordering
 class Node:
     """
     Status :
@@ -13,8 +16,8 @@ class Node:
         4 - dead
     """
 
-    def __init__(self):
-        self.status = 0
+    def __init__(self, status=0):
+        self.status = status
 
         self.size = NODE_SIZE
         self.surface = pygame.Surface((self.size, self.size))
@@ -26,11 +29,16 @@ class Node:
         self.colour = colour_lookup(self.status)
         self.desired_colour = colour_lookup(self.status)
 
+        self.colour_shift_max_step = 3
 
-    def draw(self):
+
+    def draw(self, no_anim=False):
         if self.animate:
             if self.colour != self.desired_colour:
                 self.shift_overall_colour()
+
+        if no_anim:
+            self.colour = colour_lookup(self.status)
 
         self.surface.fill(self.colour)
         pygame.draw.rect(self.surface, GRID_COLOUR, self.rect, 1)
@@ -46,12 +54,12 @@ class Node:
         self.colour = (new_r, new_g, new_b)
 
 
-    def shift_clamp_channel(self, channel1, channel2, max_step=3):
+    def shift_clamp_channel(self, channel1, channel2):
         if channel1 != channel2:
             if channel1 < channel2:
-                channel1 += min(max_step, max(0, abs(channel2 - channel1)))
+                channel1 += min(self.colour_shift_max_step, max(0, abs(channel2 - channel1)))
             else:
-                channel1 -= min(max_step, max(0, abs(channel2 - channel1)))
+                channel1 -= min(self.colour_shift_max_step, max(0, abs(channel2 - channel1)))
 
         return channel1
 
@@ -84,6 +92,33 @@ class Node:
         else:
             self.colour = colour_lookup(self.status)
 
-
     def __repr__(self):
         return f'<N: {self.status}>'
+
+    # equals
+    def __eq__(self, other):
+        return self.status == other.status
+
+    # less than
+    def __lt__(self, other):
+        return self.status < other.status
+
+    # less than or equal
+    def __le__(self, other):
+        return self.status <= other.status
+
+    # greater than
+    def __gt__(self, other):
+        return self.status > other.status
+
+    # greater than or equal
+    def __ge__(self, other):
+        return self.status >= other.status
+
+    # # positive
+    # def __pos__(self):
+    #     return self
+    #
+    # # negative
+    # def __neg__(self):
+    #     return Node(status=4)

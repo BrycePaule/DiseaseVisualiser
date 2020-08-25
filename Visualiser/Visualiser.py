@@ -10,7 +10,7 @@ from Settings.VisualiserSettings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from Settings.VisualiserSettings import VIS_WINDOW_SIZE, VIS_NODE_WIDTH, NODE_SIZE, NODE_COUNT
 from Settings.VisualiserSettings import ALGORITHM_CALL_STEP, TIMED_DAYS, ANIMATE_NODES
 from Settings.VisualiserSettings import BG_COLOUR, GRID_BORDER_COLOUR
-from Settings.AlgorithmSettings import DAY_LIMIT
+from Settings.AlgorithmSettings import DAY_LIMIT, STARTING_INFECTIONS
 
 
 class Visualiser:
@@ -24,17 +24,19 @@ class Visualiser:
 
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.grid_surf = pygame.Surface((VIS_WINDOW_SIZE, VIS_WINDOW_SIZE))
+        self.font = pygame.font.SysFont('Arial', 30)
+        self.day_text = ''
 
-        self.grid = np.array([Node() for _ in range(VIS_NODE_WIDTH * VIS_NODE_WIDTH)])
-        self.grid_sorted = np.array([None for _ in range(VIS_NODE_WIDTH * VIS_NODE_WIDTH)])
+        self.grid = np.array([Node() for _ in range(VIS_NODE_WIDTH ** 2)])
+        self.grid_sorted = np.array([Node() for _ in range(VIS_NODE_WIDTH ** 2)])
         self.sort_toggle = False
-        self.nodes_updated_since_draw = False
+        self.nodes_updated_since_draw = True
 
         self.day_limit = DAY_LIMIT
         self.spread = DiseaseSpread()
         self.day = 0
         self.daily_stats = {}
-        self.nodes = self.nodes = {
+        self.nodes = {
             'healthy': {'nodes': [], 'percentage': 0.00, 'excess': 0, 'needed': 0},
             'infected': {'nodes': [], 'percentage': 0.00, 'excess': 0, 'needed': 0},
             'recovered': {'nodes': [], 'percentage': 0.00, 'excess': 0, 'needed': 0},
@@ -74,11 +76,10 @@ class Visualiser:
     def run(self):
         self.profiler.enable()
 
-        for i in range(1):
+        for i in range(STARTING_INFECTIONS):
             self.spread.population.people[i].infect()
 
         while self.day <= self.day_limit:
-
             self.clock.tick(FPS)
             self.events()
 
@@ -88,7 +89,9 @@ class Visualiser:
                         start = pygame.time.get_ticks()
                         self.daily_stats[self.day] = self.spread.pass_day(self.day)
                         runtime = pygame.time.get_ticks() - start
+
                         self.disease_algorithm_runtime = (self.disease_algorithm_runtime + runtime) // 2
+                        self.update_node_animation_time()
                     else:
                         self.daily_stats[self.day] = self.spread.pass_day(self.day)
                 else:
@@ -101,19 +104,12 @@ class Visualiser:
 
             self.draw()
 
-            # if self.day > 0:
-            #     if self.spread.is_finished(self.day):
-            #         return
-
 
     def draw(self):
         self.screen.fill(BG_COLOUR)
 
-        font = pygame.font.SysFont('Arial', 30)
-        text = font.render(f'Day: {self.day}', 1, (255, 255, 255))
-        self.screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, 20))
-
         self.draw_grid()
+        self.draw_UI()
 
         self.screen.blit(
             self.grid_surf,
@@ -121,13 +117,16 @@ class Visualiser:
              (SCREEN_HEIGHT // 2) - (self.grid_surf.get_height() // 2))
         )
 
+        self.nodes_updated_since_draw = False
         pygame.display.update()
 
 
     def draw_grid(self):
-        self.grid_surf.fill((0, 0, 0))
-
         node_index = 0
+
+        if self.sort_toggle:
+            if self.nodes_updated_since_draw:
+                self.nodes_sort()
 
         for y in range(VIS_NODE_WIDTH):
             for x in range(VIS_NODE_WIDTH):
@@ -135,16 +134,18 @@ class Visualiser:
                 if not self.sort_toggle:
                     node_surf = self.grid[node_index].draw()
                     self.grid_surf.blit(node_surf, (x * NODE_SIZE, y * NODE_SIZE))
-
                 else:
-                    if self.nodes_updated_since_draw:
-                        self.nodes_sort()
-                    node_surf = self.grid_sorted[node_index].draw()
+                    node_surf = self.grid_sorted[node_index].draw(no_anim=True)
                     self.grid_surf.blit(node_surf, (x * NODE_SIZE, y * NODE_SIZE))
 
                 node_index += 1
 
-        self.nodes_updated_since_draw = False
+
+    def draw_UI(self):
+        if self.nodes_updated_since_draw:
+            self.day_text = self.font.render(f'Day: {self.day}', 1, (255, 255, 255))
+
+        self.screen.blit(self.day_text, (SCREEN_WIDTH // 2 - self.day_text.get_width() // 2, 20))
 
 
     def day_has_passed(self):
@@ -171,7 +172,6 @@ class Visualiser:
 
             'total': {'nodes': [], 'excess': []},
         }
-
 
         node_index = 0
         for y in range(VIS_NODE_WIDTH):
@@ -243,7 +243,7 @@ class Visualiser:
 
 
     def nodes_sort(self):
-        self.grid_sorted = np.array(sorted(self.grid, key=lambda node: node.status, reverse=True))
+        self.grid_sorted = np.array(sorted(self.grid, reverse=True))
 
 
     def write_daily_stats_to_file(self):
@@ -256,3 +256,8 @@ class Visualiser:
                     f.write(f'{k} - {v}\n')
 
                 f.write('\n')
+
+
+    def update_node_animation_time(self, time=0):
+        for node in self.grid:
+            node.colour_shift_max_step = 255 * FPS // (self.disease_algorithm_runtime + self.time_step)
