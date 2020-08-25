@@ -1,4 +1,5 @@
 import random
+import numpy as np
 
 from Settings.AlgorithmSettings import POPULATION_SIZE, INFECTION_CHANCE, SECONDARY_INFECTION_CHANCE
 from DiseaseAlgorithm.Person import Person
@@ -11,7 +12,7 @@ class Population:
     def __init__(self):
         self.size = POPULATION_SIZE
 
-        self.people = [Person(self, i) for i in range(self.size)]
+        self.people = np.array([Person(self, i) for i in range(self.size)])
 
         self.stats = {
             'healthy': self.size,
@@ -43,9 +44,8 @@ class Population:
 
     def pass_day(self):
         for person in self.people:
-
             for _ in range(person.contacts_per_day):
-                contact = self.people[random.randrange(0, self.size)]
+                contact = self.people[int(self.size * random.random())]
 
                 if person.status in [0, 3] and contact.status in [1, 2]:
                     if person.status == 0:

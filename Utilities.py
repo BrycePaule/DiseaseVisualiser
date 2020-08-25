@@ -1,7 +1,7 @@
 import random
 
 def roll(chance):
-    throw = random.randrange(0, 10000)
+    throw = int(10000 * random.random())
     if throw < chance * 100:
         return True
     else:
@@ -12,7 +12,6 @@ def str_fill(string, n):
         return string + (' ' * (n - len(string)))
 
 def days_to_readable_date_format(days):
-
     years = 0
     months = 0
     weeks = 0
