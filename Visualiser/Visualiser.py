@@ -10,8 +10,10 @@ from DiseaseAlgorithm.VirusManager import VirusManager
 from Settings.VisualiserSettings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from Settings.VisualiserSettings import VIS_WINDOW_SIZE, VIS_NODE_WIDTH, NODE_SIZE, NODE_COUNT
 from Settings.VisualiserSettings import MIN_ALGORITHM_CALL_STEP, TIMED_DAYS, ANIMATE_NODES
-from Settings.VisualiserSettings import BG_COLOUR, GRID_BORDER_COLOUR, TIME_SCALE_ANIM
+from Settings.VisualiserSettings import BG_COLOUR, GRID_BORDER_COLOUR, SCALE_ANIM_WITH_TIME
 from Settings.AlgorithmSettings import DAY_LIMIT, STARTING_INFECTIONS
+
+from GUI.Button import Button
 
 
 class Visualiser:
@@ -24,9 +26,11 @@ class Visualiser:
         self.clock = pygame.time.Clock()
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.grid_surf = pygame.Surface((VIS_WINDOW_SIZE, VIS_WINDOW_SIZE))
+        self.UI_surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
 
-        self.font = pygame.font.SysFont('Arial', 30)
-        self.day_text = ''
+        self.day_font = pygame.font.SysFont('Arial', 30)
+        self.day_text = None
+        self.buttons = []
 
         self.grid = np.array([Node() for _ in range(VIS_NODE_WIDTH ** 2)])
         self.grid_sorted = np.array([Node() for _ in range(VIS_NODE_WIDTH ** 2)])
@@ -73,6 +77,13 @@ class Visualiser:
                         np.random.shuffle(self.grid)
                     self.sort_toggle = not self.sort_toggle
 
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mpos = pygame.mouse.get_pos()
+
+                for button in self.buttons:
+                    if button.clicked(mpos):
+                        print(f'Clicked: {button.text}')
+
 
     def run(self):
         self.profiler.enable()
@@ -83,23 +94,25 @@ class Visualiser:
         while self.day <= self.day_limit:
             self.clock.tick(FPS)
             self.events()
+            self.handle_UI()
 
-            if self.day_has_passed():
-                if TIME_SCALE_ANIM and self.animate_nodes:
-                    if self.day < TIMED_DAYS:
-                        start = pygame.time.get_ticks()
-                        self.daily_stats[self.day] = self.virus_spread_projection.pass_day(self.day)
-                        runtime = pygame.time.get_ticks() - start
+            if not self.virus_spread_projection.finished:
+                if self.day_has_passed():
+                    if SCALE_ANIM_WITH_TIME and self.animate_nodes:
+                        if self.day < TIMED_DAYS:
+                            start = pygame.time.get_ticks()
+                            self.daily_stats[self.day] = self.virus_spread_projection.pass_day(self.day)
+                            runtime = pygame.time.get_ticks() - start
 
-                        self.disease_algorithm_runtime = (self.disease_algorithm_runtime + runtime) // 2
-                        self.update_node_animation_time()
+                            self.disease_algorithm_runtime = (self.disease_algorithm_runtime + runtime) // 2
+                            self.update_node_animation_time()
 
-                self.daily_stats[self.day] = self.virus_spread_projection.pass_day(self.day)
+                    self.daily_stats[self.day] = self.virus_spread_projection.pass_day(self.day)
 
-                # self.write_daily_stats_to_file()
+                    # self.write_daily_stats_to_file()
 
-                self.nodes_update()
-                self.day += 1
+                    self.nodes_update()
+                    self.day += 1
 
             self.draw()
 
@@ -109,23 +122,24 @@ class Visualiser:
 
         self.draw_grid()
         self.draw_UI()
+        self.nodes_updated_since_draw = False
 
         self.screen.blit(
             self.grid_surf,
-            ((SCREEN_WIDTH // 2) - (self.grid_surf.get_width() // 2),
+            (((SCREEN_WIDTH // 2) - (self.grid_surf.get_width() // 2)) + 100,
              (SCREEN_HEIGHT // 2) - (self.grid_surf.get_height() // 2))
         )
 
-        self.nodes_updated_since_draw = False
+        self.screen.blit(self.UI_surf, (0, 0))
+
         pygame.display.update()
 
 
     def draw_grid(self):
-        node_index = 0
+        if self.sort_toggle and self.nodes_updated_since_draw:
+            self.nodes_sort()
 
-        if self.sort_toggle:
-            if self.nodes_updated_since_draw:
-                self.nodes_sort()
+        node_index = 0
 
         for y in range(VIS_NODE_WIDTH):
             for x in range(VIS_NODE_WIDTH):
@@ -141,18 +155,26 @@ class Visualiser:
 
 
     def draw_UI(self):
-        if self.nodes_updated_since_draw:
-            self.day_text = self.font.render(f'Day: {self.day}', 1, (255, 255, 255))
+        self.UI_surf.fill((0, 0, 0, 0))
 
-        self.screen.blit(self.day_text, (SCREEN_WIDTH // 2 - self.day_text.get_width() // 2, 20))
+        if self.nodes_updated_since_draw:
+            self.day_text = self.day_font.render(f'Day: {self.day}', 1, (255, 255, 255))
+
+        if self.day == 0:
+            but = Button('test', 10, SCREEN_HEIGHT // 2, 100, 30, True)
+            self.buttons.append(but)
+
+        for button in self.buttons:
+            button.draw(self.UI_surf)
+
+        self.UI_surf.blit(self.day_text, (SCREEN_WIDTH // 2 - self.day_text.get_width() // 2, 20))
 
 
     def day_has_passed(self):
         if pygame.time.get_ticks() > self.time_count + self.time_step:
             self.time_count = pygame.time.get_ticks()
             return True
-        else:
-            return False
+        return False
 
 
     def nodes_update(self):
@@ -261,3 +283,10 @@ class Visualiser:
         for node in self.grid:
             node.colour_shift_max_step = 255 * FPS // (self.disease_algorithm_runtime + self.time_step) // 5
             # node.colour_shift_max_step = 5
+
+
+    def handle_UI(self):
+        mpos = pygame.mouse.get_pos()
+
+        for button in self.buttons:
+            button.update(mpos)
