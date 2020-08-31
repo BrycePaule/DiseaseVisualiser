@@ -3,6 +3,7 @@ import pygame
 class Button:
 
     def __init__(self, text, x, y, width, height, border=False, colour=(0, 0, 0), text_colour=(255, 255, 255), border_colour=(255, 0, 0), border_width=1):
+        # test
         self.x = x
         self.y = y
         self.width = width
