@@ -20,9 +20,12 @@ class Visualiser:
 
     pygame.init()
     pygame.font.init()
-    pygame.display.set_caption('Disease Spread Visualiser')
+    pygame.display.set_caption('Virus Spread Visualiser')
 
     def __init__(self):
+        # RUNNING
+        self.paused = False
+
         self.clock = pygame.time.Clock()
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.grid_surf = pygame.Surface((VIS_WINDOW_SIZE, VIS_WINDOW_SIZE))
@@ -30,7 +33,10 @@ class Visualiser:
 
         self.day_font = pygame.font.SysFont('Arial', 30)
         self.day_text = None
-        self.buttons = []
+        self.buttons = [
+            Button('Start', 10, SCREEN_HEIGHT // 2, 100, 30, True, toggleable=True, callback=self.callback_pause, alt_text='Pause'),
+            Button('Reset', 10, SCREEN_HEIGHT // 2 + 50, 100, 30, True, callback=self.callback_reset),
+        ]
 
         self.grid = np.array([Node() for _ in range(VIS_NODE_WIDTH ** 2)])
         self.grid_sorted = np.array([Node() for _ in range(VIS_NODE_WIDTH ** 2)])
@@ -66,23 +72,22 @@ class Visualiser:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 self.profiler.disable()
-                self.profiler.print_stats(sort='cumtime')
+                # self.profiler.print_stats(sort='cumtime')
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     self.profiler.disable()
-                    self.profiler.print_stats(sort='cumtime')
+                    # self.profiler.print_stats(sort='cumtime')
                 if event.key == pygame.K_SPACE:
                     if self.sort_toggle:
                         np.random.shuffle(self.grid)
                     self.sort_toggle = not self.sort_toggle
 
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                mpos = pygame.mouse.get_pos()
-
-                for button in self.buttons:
-                    if button.clicked(mpos):
-                        print(f'Clicked: {button.text}')
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
+                    for button in self.buttons:
+                        if button.check_clicked(event.pos):
+                            button.click()
 
 
     def run(self):
@@ -97,22 +102,23 @@ class Visualiser:
             self.handle_UI()
 
             if not self.virus_spread_projection.finished:
-                if self.day_has_passed():
-                    if SCALE_ANIM_WITH_TIME and self.animate_nodes:
-                        if self.day < TIMED_DAYS:
-                            start = pygame.time.get_ticks()
-                            self.daily_stats[self.day] = self.virus_spread_projection.pass_day(self.day)
-                            runtime = pygame.time.get_ticks() - start
+                if self.paused:
+                    if self.day_has_passed():
+                        if SCALE_ANIM_WITH_TIME and self.animate_nodes:
+                            if self.day < TIMED_DAYS:
+                                start = pygame.time.get_ticks()
+                                self.daily_stats[self.day] = self.virus_spread_projection.pass_day(self.day)
+                                runtime = pygame.time.get_ticks() - start
 
-                            self.disease_algorithm_runtime = (self.disease_algorithm_runtime + runtime) // 2
-                            self.update_node_animation_time()
+                                self.disease_algorithm_runtime = (self.disease_algorithm_runtime + runtime) // 2
+                                self.update_node_animation_time()
 
-                    self.daily_stats[self.day] = self.virus_spread_projection.pass_day(self.day)
+                        self.daily_stats[self.day] = self.virus_spread_projection.pass_day(self.day)
 
-                    # self.write_daily_stats_to_file()
+                        # self.write_daily_stats_to_file()
 
-                    self.nodes_update()
-                    self.day += 1
+                        self.nodes_update()
+                        self.day += 1
 
             self.draw()
 
@@ -159,10 +165,6 @@ class Visualiser:
 
         if self.nodes_updated_since_draw:
             self.day_text = self.day_font.render(f'Day: {self.day}', 1, (255, 255, 255))
-
-        if self.day == 0:
-            but = Button('test', 10, SCREEN_HEIGHT // 2, 100, 30, True)
-            self.buttons.append(but)
 
         for button in self.buttons:
             button.draw(self.UI_surf)
@@ -290,3 +292,32 @@ class Visualiser:
 
         for button in self.buttons:
             button.update(mpos)
+
+
+    def callback_pause(self):
+        self.paused = not self.paused
+
+
+    def callback_reset(self):
+        self.grid = np.array([Node() for _ in range(VIS_NODE_WIDTH ** 2)])
+        self.grid_sorted = np.array([Node() for _ in range(VIS_NODE_WIDTH ** 2)])
+        self.sort_toggle = False
+        self.nodes_updated_since_draw = True
+
+        self.virus_manager = VirusManager()
+        self.virus_spread_projection = VirusSpreadProjection(self.virus_manager.diseases['COVID-19'])
+        self.day_limit = DAY_LIMIT
+        self.day = 0
+        self.daily_stats = {}
+        self.nodes = {
+            'healthy': {'nodes': [], 'percentage': 0.00, 'excess': 0, 'needed': 0},
+            'infected': {'nodes': [], 'percentage': 0.00, 'excess': 0, 'needed': 0},
+            'recovered': {'nodes': [], 'percentage': 0.00, 'excess': 0, 'needed': 0},
+            'dead': {'nodes': [], 'percentage': 0.00, 'excess': 0, 'needed': 0},
+            'total': {'nodes': [], 'excess': []}
+        }
+
+        if not self.paused:
+            self.buttons[0].click()
+
+        self.run()
