@@ -6,6 +6,7 @@ class VirusManager:
 
     def __init__(self):
         self.diseases = self.import_diseases()
+        self.active_virus = list(self.diseases.values())[0]
 
 
     def import_diseases(self):

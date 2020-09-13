@@ -1,3 +1,4 @@
+from copy import deepcopy
 
 class Virus:
 
@@ -19,6 +20,9 @@ class Virus:
             'reinfection_chance': self.reinfection_chance,
             'fatality_chance': self.fatality_chance
         }
+
+    def copy(self):
+        return deepcopy(self)
 
 
     def __repr__(self):

@@ -16,17 +16,18 @@ class VirusSpreadProjection:
         self.finished = False
 
 
-    def pass_day(self, day):
+    def pass_day(self, day, print_stats=False):
         self.population.pass_day()
         self.population.update_infection_stats()
 
         self.daily_stats[day] = self.population.virus_stats.copy()
 
-        print(f'Day: {day} {days_to_readable_date_format(day)}')
-        print(f'    - {str_fill("Healthy", 10)} {self.daily_stats[day]["healthy_percentage"]}% ({self.daily_stats[day]["healthy"]}/{self.population.size})')
-        print(f'    - {str_fill("Infected", 10)} {self.daily_stats[day]["infected_percentage"]}% ({self.daily_stats[day]["infected_total"]}/{self.population.size})')
-        print(f'    - {str_fill("Recovered", 10)} {self.daily_stats[day]["recovered_percentage"]}% ({self.daily_stats[day]["recovered"]}/{self.population.size})')
-        print(f'    - {str_fill("Dead", 10)} {self.daily_stats[day]["dead_percentage"]}% ({self.daily_stats[day]["dead"]}/{self.population.size})')
+        if print_stats:
+            print(f'Day: {day} {days_to_readable_date_format(day)}')
+            print(f'    - {str_fill("Healthy", 10)} {self.daily_stats[day]["healthy_percentage"]}% ({self.daily_stats[day]["healthy"]}/{self.population.size})')
+            print(f'    - {str_fill("Infected", 10)} {self.daily_stats[day]["infected_percentage"]}% ({self.daily_stats[day]["infected_total"]}/{self.population.size})')
+            print(f'    - {str_fill("Recovered", 10)} {self.daily_stats[day]["recovered_percentage"]}% ({self.daily_stats[day]["recovered"]}/{self.population.size})')
+            print(f'    - {str_fill("Dead", 10)} {self.daily_stats[day]["dead_percentage"]}% ({self.daily_stats[day]["dead"]}/{self.population.size})')
 
         # if day % 50 == 0 or day == DAY_LIMIT:
         #     self.graph_result(day)

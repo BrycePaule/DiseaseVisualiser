@@ -10,10 +10,13 @@ from DiseaseAlgorithm.VirusManager import VirusManager
 from Settings.VisualiserSettings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from Settings.VisualiserSettings import VIS_WINDOW_SIZE, VIS_NODE_WIDTH, NODE_SIZE, NODE_COUNT
 from Settings.VisualiserSettings import MIN_ALGORITHM_CALL_STEP, TIMED_DAYS, ANIMATE_NODES
-from Settings.VisualiserSettings import BG_COLOUR, GRID_BORDER_COLOUR, SCALE_ANIM_WITH_TIME
+from Settings.VisualiserSettings import BG_COLOUR, SCALE_ANIM_WITH_TIME
 from Settings.AlgorithmSettings import DAY_LIMIT, STARTING_INFECTIONS
 
-from GUI.Button import Button
+from GUI.UIElements.Button import Button
+from GUI.UIElements.TextBox import TextBox
+from GUI.UIElements.Text import Text
+from GUI.UIElements.UIGroup import UIGroup
 
 
 class Visualiser:
@@ -24,7 +27,7 @@ class Visualiser:
 
     def __init__(self):
         # RUNNING
-        self.paused = False
+        self.paused = True
 
         self.clock = pygame.time.Clock()
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -33,10 +36,6 @@ class Visualiser:
 
         self.day_font = pygame.font.SysFont('Arial', 30)
         self.day_text = None
-        self.buttons = [
-            Button('Start', 10, SCREEN_HEIGHT // 2, 100, 30, True, toggleable=True, callback=self.callback_pause, alt_text='Pause'),
-            Button('Reset', 10, SCREEN_HEIGHT // 2 + 50, 100, 30, True, callback=self.callback_reset),
-        ]
 
         self.grid = np.array([Node() for _ in range(VIS_NODE_WIDTH ** 2)])
         self.grid_sorted = np.array([Node() for _ in range(VIS_NODE_WIDTH ** 2)])
@@ -63,6 +62,20 @@ class Visualiser:
         self.animate_nodes = ANIMATE_NODES
         self.disease_algorithm_runtime = 0
 
+        self.UIGroups = [UIGroup('Diseases', single_selection=True)]
+        self.ui_elements = [
+            Button('Start', 90, 50, 100, 30, ui_group=self.UIGroups[0], border=True, callback=self.callback_pause, toggleable=True, alt_text='Pause'),
+            Button('Reset', 90, 100, 100, 30, ui_group=self.UIGroups[0], border=True, callback=self.callback_reset),
+
+            Text(f'Diagnose Days', 20, 200, 100, 30, align='left'),
+            TextBox(f'{self.virus_manager.active_virus.diagnose_days}', 90, 200, 100, 30, border=True, callback=self.callback_diagnose_days, selectable=True, num_only=True),
+            TextBox(f'{self.virus_manager.active_virus.recovery_days}', 90, 250, 100, 30, border=True, callback=self.callback_recovery_days, selectable=True, num_only=True),
+            TextBox(f'{self.virus_manager.active_virus.infection_chance}', 90, 300, 100, 30, border=True, callback=self.callback_infection_chance, selectable=True, num_only=True),
+            TextBox(f'{self.virus_manager.active_virus.reinfection_chance}', 90, 350, 100, 30, border=True, callback=self.callback_reinfection_chance, selectable=True, num_only=True),
+            TextBox(f'{self.virus_manager.active_virus.fatality_chance}', 90, 400, 100, 30, border=True, callback=self.callback_fatality_chance, selectable=True, num_only=True),
+        ]
+        self.selected_text_box = None
+
         # PROFILING
         self.profiler = cProfile.Profile()
 
@@ -74,20 +87,40 @@ class Visualiser:
                 self.profiler.disable()
                 # self.profiler.print_stats(sort='cumtime')
             elif event.type == pygame.KEYDOWN:
+                # UI interaction
+                if self.selected_text_box:
+                    if event.key == pygame.K_BACKSPACE:
+                        if len(self.selected_text_box.user_text) > 0:
+                            self.selected_text_box.user_text = self.selected_text_box.user_text[:-1]
+                            continue
+                    elif event.key == pygame.K_RETURN:
+                        self.selected_text_box.use()
+                        continue
+                    elif event.key == pygame.K_ESCAPE:
+                        self.selected_text_box.reset_selection()
+                        continue
+                    else:
+                        self.selected_text_box.user_text += event.unicode
+                        continue
+
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     self.profiler.disable()
+                    continue
                     # self.profiler.print_stats(sort='cumtime')
-                if event.key == pygame.K_SPACE:
+
+                elif event.key == pygame.K_SPACE:
                     if self.sort_toggle:
                         np.random.shuffle(self.grid)
                     self.sort_toggle = not self.sort_toggle
+                    continue
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
-                    for button in self.buttons:
-                        if button.check_clicked(event.pos):
-                            button.click()
+                    for element in self.ui_elements:
+                        if element.check_clicked(event.pos):
+                            element.click()
+                            self.selected_text_box = element
 
 
     def run(self):
@@ -102,18 +135,18 @@ class Visualiser:
             self.handle_UI()
 
             if not self.virus_spread_projection.finished:
-                if self.paused:
+                if not self.paused:
                     if self.day_has_passed():
                         if SCALE_ANIM_WITH_TIME and self.animate_nodes:
                             if self.day < TIMED_DAYS:
                                 start = pygame.time.get_ticks()
-                                self.daily_stats[self.day] = self.virus_spread_projection.pass_day(self.day)
+                                self.daily_stats[self.day] = self.virus_spread_projection.pass_day(self.day, print_stats=False)
                                 runtime = pygame.time.get_ticks() - start
 
                                 self.disease_algorithm_runtime = (self.disease_algorithm_runtime + runtime) // 2
                                 self.update_node_animation_time()
 
-                        self.daily_stats[self.day] = self.virus_spread_projection.pass_day(self.day)
+                        self.daily_stats[self.day] = self.virus_spread_projection.pass_day(self.day, print_stats=False)
 
                         # self.write_daily_stats_to_file()
 
@@ -166,7 +199,7 @@ class Visualiser:
         if self.nodes_updated_since_draw:
             self.day_text = self.day_font.render(f'Day: {self.day}', 1, (255, 255, 255))
 
-        for button in self.buttons:
+        for button in self.ui_elements:
             button.draw(self.UI_surf)
 
         self.UI_surf.blit(self.day_text, (SCREEN_WIDTH // 2 - self.day_text.get_width() // 2, 20))
@@ -290,22 +323,25 @@ class Visualiser:
     def handle_UI(self):
         mpos = pygame.mouse.get_pos()
 
-        for button in self.buttons:
+        for button in self.ui_elements:
             button.update(mpos)
 
 
-    def callback_pause(self):
+    def reset_UI_elements(self, *exclusions):
+        for element in [element for element in self.ui_elements if element not in exclusions]:
+            element.reset_selection()
+
+
+    def callback_pause(self, caller):
         self.paused = not self.paused
 
-
-    def callback_reset(self):
+    def callback_reset(self, caller):
         self.grid = np.array([Node() for _ in range(VIS_NODE_WIDTH ** 2)])
         self.grid_sorted = np.array([Node() for _ in range(VIS_NODE_WIDTH ** 2)])
         self.sort_toggle = False
         self.nodes_updated_since_draw = True
 
-        self.virus_manager = VirusManager()
-        self.virus_spread_projection = VirusSpreadProjection(self.virus_manager.diseases['COVID-19'])
+        self.virus_spread_projection = VirusSpreadProjection(self.virus_manager.active_virus)
         self.day_limit = DAY_LIMIT
         self.day = 0
         self.daily_stats = {}
@@ -318,6 +354,52 @@ class Visualiser:
         }
 
         if not self.paused:
-            self.buttons[0].click()
+            self.ui_elements[0].click()
 
+        self.reset_UI_elements(caller)
         self.run()
+
+    def callback_diagnose_days(self, caller, days):
+        new_virus = self.virus_manager.active_virus.copy()
+        new_virus.name = 'Custom'
+        new_virus.diagnose_days = days
+
+        self.virus_manager.active_virus = new_virus
+        self.selected_text_box = caller
+        self.callback_reset(caller)
+
+    def callback_recovery_days(self, caller, days):
+        new_virus = self.virus_manager.active_virus.copy()
+        new_virus.name = 'Custom'
+        new_virus.recovery_days = days
+
+        self.virus_manager.active_virus = new_virus
+        self.selected_text_box = caller
+        self.callback_reset(caller)
+
+    def callback_infection_chance(self, caller, days):
+        new_virus = self.virus_manager.active_virus.copy()
+        new_virus.name = 'Custom'
+        new_virus.infection_chance = days
+
+        self.virus_manager.active_virus = new_virus
+        self.selected_text_box = caller
+        self.callback_reset(caller)
+
+    def callback_reinfection_chance(self, caller, days):
+        new_virus = self.virus_manager.active_virus.copy()
+        new_virus.name = 'Custom'
+        new_virus.reinfection_chance = days
+
+        self.virus_manager.active_virus = new_virus
+        self.selected_text_box = caller
+        self.callback_reset(caller)
+
+    def callback_fatality_chance(self, caller, days):
+        new_virus = self.virus_manager.active_virus.copy()
+        new_virus.name = 'Custom'
+        new_virus.fatality_chance = days
+
+        self.virus_manager.active_virus = new_virus
+        self.selected_text_box = caller
+        self.callback_reset(caller)

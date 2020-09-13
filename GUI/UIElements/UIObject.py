@@ -1,26 +1,28 @@
 import pygame
 
-class Button:
+class UIObject:
 
-    def __init__(self, text, x, y, width, height, border=False, colour=(0, 0, 0), text_colour=(255, 255, 255), border_colour=(255, 0, 0), border_width=1,
-            callback=None, toggleable=False, alt_text=None):
-
+    def __init__(self, text, x, y, width, height, ui_group=None, border=False, colour=(0, 0, 0), text_colour=(255, 255, 255), border_colour=(255, 0, 0), border_width=1,
+                    selectable=False, toggleable=False):
         self.x = x
         self.y = y
         self.width = width
         self.height = height
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
         self.surface = pygame.Surface((self.width, self.height))
+        self.ui_group = ui_group
+
+        self.selectable = selectable
+        self.toggleable = toggleable
 
         self.hovered = False
         self.selected = False
-        self.toggleable = toggleable
-        self.callback = callback
+        self.toggle = False
 
         self.text = text
-        self.alt_text = alt_text if alt_text else self.text
         self.colour = colour
         self.hover_colour = (colour[0] + 20, colour[1] + 20, colour[1] + 20)
+        self.selected_colour = (colour[0] + 60, colour[1] + 60, colour[1] + 60)
         self.text_colour = text_colour
         self.border = border
         self.border_colour = border_colour
@@ -28,8 +30,6 @@ class Button:
 
         self.text_font = pygame.font.SysFont('Arial', 20)
         self.text_render = self.text_font.render(self.text, 1, self.text_colour)
-        self.alt_text_render = self.text_font.render(self.alt_text, 1, self.text_colour)
-
 
 
     def update(self, mpos):
@@ -39,27 +39,21 @@ class Button:
     def draw(self, win):
         if self.hovered:
             self.surface.fill(self.hover_colour)
+        elif self.selected:
+            self.surface.fill(self.selected_colour)
         else:
             self.surface.fill(self.colour)
 
-        if not self.selected:
-            self.surface.blit(
-                self.text_render,
-                ((self.width // 2 - self.text_render.get_width() // 2),
-                 (self.height // 2 - self.text_render.get_height() // 2))
-            )
-        else:
-            self.surface.blit(
-                self.alt_text_render,
-                ((self.width // 2 - self.alt_text_render.get_width() // 2),
-                 (self.height // 2 - self.alt_text_render.get_height() // 2))
-            )
+        self.surface.blit(
+            self.text_render,
+            ((self.width // 2 - self.text_render.get_width() // 2),
+             (self.height // 2 - self.text_render.get_height() // 2))
+        )
 
         if self.border:
             pygame.draw.rect(self.surface, self.border_colour, pygame.Rect(0, 0, self.width, self.height), self.border_width)
 
         win.blit(self.surface, (self.x, self.y))
-
 
 
     def check_hovered(self, mpos):
@@ -87,12 +81,12 @@ class Button:
         if self.rect.collidepoint(x, y):
             return True
 
+        self.selected = False
+
 
     def click(self):
-        if self.toggleable:
-            self.selected = not self.selected
+        pass
 
-        if self.callback is None:
-            return
 
-        self.callback()
+    def use(self):
+        pass
