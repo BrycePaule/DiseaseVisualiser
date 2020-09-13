@@ -6,16 +6,22 @@ from GUI.UIElements.UIObject import UIObject
 
 class TextBox(UIObject):
 
-    def __init__(self, text, x, y, width, height, ui_group=None, border=False, colour=(0, 0, 0), text_colour=(255, 255, 255),
-                    alt_text_colour=(200, 200, 200), border_colour=(255, 0, 0), border_width=1, callback=None, selectable=False, toggleable=False, num_only=False,
-                    text_suffix=None):
+    def __init__(self, text, x, y, width, height, ui_group=None, border=False,
+                    colour=(0, 0, 0), hover_colour=(50, 50, 50), selected_colour=(100, 100, 100),
+                    font='Arial', font_size=20, text_colour=(255, 255, 255), alt_text_colour=(200, 200, 200),
+                    border_colour=(255, 0, 0), border_width=1,
+                    selectable=False, toggleable=False, callback=None, num_only=False, int_only=False, text_suffix=None):
 
-        super().__init__(text, x, y, width, height, ui_group=ui_group, border=border, colour=colour, text_colour=text_colour,
-                            border_colour=border_colour, border_width=border_width, selectable=selectable, toggleable=toggleable)
+        super().__init__(text, x, y, width, height, ui_group=ui_group, border=border,
+                         colour=colour, hover_colour=hover_colour, selected_colour=selected_colour,
+                         font=font, font_size=font_size, text_colour=text_colour,
+                         border_colour=border_colour, border_width=border_width,
+                         selectable=selectable, toggleable=toggleable)
 
         # SETTINGS
         self.callback = callback
         self.num_only = num_only
+        self.int_only = int_only
         self.text_suffix = f' {text_suffix}' if text_suffix else ''
 
         self.user_text = ''
@@ -112,7 +118,10 @@ class TextBox(UIObject):
         valid_chars = f'0123456789.{ascii_letters}'
 
         if self.num_only:
-            valid_chars = valid_chars[:11]
+            if self.int_only:
+                valid_chars = valid_chars[:10]
+            else:
+                valid_chars = valid_chars[:11]
 
         for s in self.user_text:
             if s not in valid_chars:

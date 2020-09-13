@@ -2,14 +2,17 @@ import pygame
 
 class UIObject:
 
-    def __init__(self, text, x, y, width, height, ui_group=None, border=False, colour=(0, 0, 0), text_colour=(255, 255, 255), border_colour=(255, 0, 0), border_width=1,
+    def __init__(self, text, x, y, width, height, ui_group=None, border=False,
+                    colour=(0, 0, 0), hover_colour=(50, 50, 50), selected_colour=(100, 100, 100),
+                    font='Arial', font_size=20, text_colour=(255, 255, 255),
+                    border_colour=(255, 0, 0), border_width=1,
                     selectable=False, toggleable=False):
         self.x = x
         self.y = y
         self.width = width
         self.height = height
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
-        self.surface = pygame.Surface((self.width, self.height))
+        self.surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
         self.ui_group = ui_group
 
         self.selectable = selectable
@@ -21,14 +24,14 @@ class UIObject:
 
         self.text = text
         self.colour = colour
-        self.hover_colour = (colour[0] + 20, colour[1] + 20, colour[1] + 20)
-        self.selected_colour = (colour[0] + 60, colour[1] + 60, colour[1] + 60)
+        self.hover_colour = hover_colour
+        self.selected_colour = selected_colour
         self.text_colour = text_colour
         self.border = border
         self.border_colour = border_colour
         self.border_width = border_width
 
-        self.text_font = pygame.font.SysFont('Arial', 20)
+        self.text_font = pygame.font.SysFont(font, font_size)
         self.text_render = self.text_font.render(self.text, 1, self.text_colour)
 
 
@@ -38,6 +41,7 @@ class UIObject:
 
     def draw(self, win):
         if self.hovered:
+            self.surface.fill(self.colour)
             self.surface.fill(self.hover_colour)
         elif self.selected:
             self.surface.fill(self.selected_colour)
@@ -90,3 +94,7 @@ class UIObject:
 
     def use(self):
         pass
+
+
+    def reset_selection(self):
+        self.selected = False

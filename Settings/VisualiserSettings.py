@@ -4,7 +4,7 @@ SCREEN_HEIGHT = 950
 
 # Visualiser
 FPS = 60
-VIS_NODE_WIDTH = 100   # must be divisible by VIS_WINDOW_SIZE otherwise black bar
+VIS_NODE_WIDTH = 50   # must be divisible by VIS_WINDOW_SIZE otherwise black bar
 VIS_WINDOW_SIZE = 800
 NODE_COUNT = VIS_NODE_WIDTH * VIS_NODE_WIDTH
 NODE_SIZE = VIS_WINDOW_SIZE // VIS_NODE_WIDTH
@@ -20,7 +20,7 @@ if VIS_NODE_WIDTH >= 200:
     SCALE_ANIM_WITH_TIME = False
 
 # Runtime
-MIN_ALGORITHM_CALL_STEP = 500
+MIN_ALGORITHM_CALL_STEP = 200
 TIMED_DAYS = 50
 
 # Colours
