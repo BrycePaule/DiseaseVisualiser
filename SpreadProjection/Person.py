@@ -25,10 +25,12 @@ class Person:
         self.recovery_days_left = 0
 
     def pass_day(self):
-        if self.status in [0, 3, 4]: return
+        if self.status in [0, 3, 4]:
+            return
 
         if self.status == 1:
-            if self.diagnose_days_left <= 0: return
+            if self.diagnose_days_left <= 0:
+                return
 
             self.diagnose_days_left -= 1
             if self.diagnose_days_left == 0:

@@ -1,23 +1,24 @@
 import pygame
 
-from GUI.UIElements.UIObject import UIObject
+from Visualiser.UI.UIElements.UIObject import UIObject
 
 
 class Button(UIObject):
 
-    def __init__(self, text, x, y, width, height, ui_group=None, border=False,
-                    colour=(0, 0, 0), hover_colour=(50, 50, 50), selected_colour=(100, 100, 100),
+    def __init__(self, text, x, y, width, height, tag=None, ui_group=None, border=False,
+                    colour=(60, 60, 60), hover_colour=(80, 80, 80), selected_colour=(100, 100, 100),
                     font='Arial', font_size=20, text_colour=(255, 255, 255),
-                    border_colour=(255, 0, 0), border_width=1,
-                    selectable=False, toggleable=False, callback=None, alt_text=None):
+                    border_colour=(30, 30, 30), border_selected_colour=(150, 150, 150), border_width=1,
+                    selectable=False, toggleable=False, callback=None, callback_rv=None, alt_text=None):
 
-        super().__init__(text, x, y, width, height, ui_group=ui_group, border=border,
+        super().__init__(text, x, y, width, height, tag=tag, ui_group=ui_group, border=border,
                          colour=colour, hover_colour=hover_colour, selected_colour=selected_colour,
                          font=font, font_size=font_size, text_colour=text_colour,
-                         border_colour=border_colour, border_width=border_width,
+                         border_colour=border_colour, border_selected_colour=border_selected_colour, border_width=border_width,
                          selectable=selectable, toggleable=toggleable)
 
         self.callback = callback
+        self.callback_rv = callback_rv
 
         self.alt_text = alt_text if alt_text else self.text
         self.alt_text_render = self.text_font.render(self.alt_text, 1, self.text_colour)
@@ -45,7 +46,10 @@ class Button(UIObject):
             )
 
         if self.border:
-            pygame.draw.rect(self.surface, self.border_colour, pygame.Rect(0, 0, self.width, self.height), self.border_width)
+            if self.selected:
+                pygame.draw.rect(self.surface, self.border_selected_colour, pygame.Rect(0, 0, self.width, self.height), self.border_width)
+            else:
+                pygame.draw.rect(self.surface, self.border_colour, pygame.Rect(0, 0, self.width, self.height), self.border_width)
 
         win.blit(self.surface, (self.x, self.y))
 
@@ -54,6 +58,9 @@ class Button(UIObject):
         if self.toggleable:
             self.toggle = not self.toggle
 
+        if self.selectable:
+            self.selected = not self.selected
+
         self.use()
 
 
@@ -61,4 +68,11 @@ class Button(UIObject):
         if self.callback is None:
             return
 
-        self.callback(self)
+        if self.callback_rv:
+            try:
+                rv = getattr(self, self.callback_rv)
+                self.callback(rv)
+            except ValueError:
+                pass
+        else:
+            self.callback()

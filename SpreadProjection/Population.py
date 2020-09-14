@@ -2,7 +2,7 @@ import random
 import numpy as np
 
 from Settings.AlgorithmSettings import POPULATION_SIZE, INFECTION_CHANCE, SECONDARY_INFECTION_CHANCE
-from DiseaseAlgorithm.Person import Person
+from SpreadProjection.Person import Person
 
 from Utilities import roll
 

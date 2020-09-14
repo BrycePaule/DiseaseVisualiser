@@ -4,19 +4,21 @@ import numpy as np
 import cProfile
 
 from Visualiser.Node import Node
-from DiseaseAlgorithm.VirusSpreadProjection import VirusSpreadProjection
-from DiseaseAlgorithm.VirusManager import VirusManager
+
+from SpreadProjection.VirusSpreadProjection import VirusSpreadProjection
+from SpreadProjection.VirusManager import VirusManager
 
 from Settings.VisualiserSettings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from Settings.VisualiserSettings import VIS_WINDOW_SIZE, VIS_NODE_WIDTH
-from Settings.VisualiserSettings import MIN_ALGORITHM_CALL_STEP, TIMED_DAYS, ANIMATE_NODES
+from Settings.VisualiserSettings import MIN_ALGORITHM_CALL_STEP, TIMED_DAYS, ANIMATE_NODES, NODE_BORDER
 from Settings.VisualiserSettings import BG_COLOUR, SCALE_ANIM_WITH_TIME
 from Settings.AlgorithmSettings import DAY_LIMIT, STARTING_INFECTIONS
 
-from GUI.UIElements.Button import Button
-from GUI.UIElements.TextBox import TextBox
-from GUI.UIElements.Text import Text
-from GUI.UIElements.UIGroup import UIGroup
+from Visualiser.UI.UIElements.Button import Button
+from Visualiser.UI.UIElements.TextBox import TextBox
+from Visualiser.UI.UIElements.Text import Text
+from Visualiser.UI.UIElements.UIGroup import UIGroup
+from Visualiser.UI.CallbackManager import CallbackManager
 
 
 class Visualiser:
@@ -26,8 +28,13 @@ class Visualiser:
     pygame.display.set_caption('Virus Spread Visualiser')
 
     def __init__(self):
-        # RUNNING
-        self.paused = True
+        # VISUALISER SETTINGS
+        self.time_step = MIN_ALGORITHM_CALL_STEP   # 1000ms = 1s
+        self.time_count = pygame.time.get_ticks()
+        self.node_border = NODE_BORDER
+        self.animate_nodes = ANIMATE_NODES
+        self.disease_algorithm_runtime = 0
+
 
         self.clock = pygame.time.Clock()
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -36,6 +43,9 @@ class Visualiser:
 
         self.day_font = pygame.font.SysFont('Arial', 30)
         self.day_text = None
+        self.CBM = CallbackManager(self)
+
+        self.paused = True
 
         # GRID SETTINGS
         self.grid_size = VIS_NODE_WIDTH
@@ -62,35 +72,48 @@ class Visualiser:
             'total': {'nodes': [], 'excess': []},
         }
 
-        self.time_step = MIN_ALGORITHM_CALL_STEP   # 1000 = 1s
-        self.time_count = pygame.time.get_ticks()
-
-        self.animate_nodes = ANIMATE_NODES
-        self.disease_algorithm_runtime = 0
-
         self.UIGroups = [UIGroup('Diseases', single_selection=True)]
         self.ui_elements = [
-            Button('Start', 20, 90, 100, 30, ui_group=self.UIGroups[0], border=True, callback=self.callback_pause, toggleable=True, alt_text='Pause'),
-            Button('Reset', 140, 90, 100, 30, ui_group=self.UIGroups[0], border=True, callback=self.callback_reset),
+            Button('Start', 20, 90, 100, 30, tag='runtime', ui_group=self.UIGroups[0], border=True, hover_colour=(128, 185, 105), callback=self.CBM.callbacks['pause'], toggleable=True, alt_text='Pause'),
+            Button('Reset', 140, 90, 100, 30, tag='runtime', ui_group=self.UIGroups[0], border=True, hover_colour=(200, 90, 90), callback=self.CBM.callbacks['reset']),
 
-            Text(f'Virus Settings', 65, 160, 130, 30, align='centre'),
-            Text(f'Diagnosis Time', 20, 200, 115, 30, font_size=14, align='left'),
-            TextBox(f'{self.virus_manager.active_virus.diagnose_days}', 180, 200, 80, 30, font_size=12, text_suffix='(days)', border=True, callback=self.callback_diagnose_days, selectable=True, num_only=True),
-            Text(f'Recovery Time', 20, 250, 110, 30, font_size=14, align='left'),
-            TextBox(f'{self.virus_manager.active_virus.recovery_days}', 180, 250, 80, 30, font_size=12, text_suffix='(days)', border=True, callback=self.callback_recovery_days, selectable=True, num_only=True),
-            Text(f'Infection Chance', 20, 300, 120, 30, font_size=14, align='left'),
-            TextBox(f'{self.virus_manager.active_virus.infection_chance}', 180, 300, 80, 30, font_size=12, text_suffix='(%)', border=True, callback=self.callback_infection_chance, selectable=True, num_only=True),
-            Text(f'Re-Infection Chance', 20, 350, 150, 30, font_size=14, align='left'),
-            TextBox(f'{self.virus_manager.active_virus.reinfection_chance}', 180, 350, 80, 30, font_size=12, text_suffix='(%)', border=True, callback=self.callback_reinfection_chance, selectable=True, num_only=True),
-            Text(f'Fatality Rate', 20, 400, 100, 30, font_size=14, align='left'),
-            TextBox(f'{self.virus_manager.active_virus.fatality_chance}', 180, 400, 80, 30, font_size=12, text_suffix='(%)', border=True, callback=self.callback_fatality_chance, selectable=True, num_only=True),
+            Text(f'Virus', 65, 160, 130, 30, align='centre'),
 
-            Text(f'Visualiser Settings', 50, 500, 170, 30, align='centre'),
-            Text(f'Grid Size (NxN)', 20, 540, 100, 30, font_size=14, align='left'),
-            TextBox(f'{self.grid_size}', 180, 540, 80, 30, font_size=12, border=True, callback=self.callback_grid_size, selectable=True, num_only=True, int_only=True),
+            # Button('Common Cold', 140, 200, 100, 30, font_size=12, border=True, selectable=True),
 
+            Text(f'Virus Settings', 65, 260, 130, 30, align='centre'),
+            Text(f'Diagnosis Time', 20, 300, 115, 30, font_size=14, align='left'),
+            TextBox(f'{self.virus_manager.active_virus.diagnose_days}', 180, 300, 80, 30, tag='virus_setting', font_size=12, text_suffix=' (days)', border=True, callback=self.CBM.callbacks['diagnosis'], selectable=True, num_only=True),
+            Text(f'Recovery Time', 20, 340, 110, 30, font_size=14, align='left'),
+            TextBox(f'{self.virus_manager.active_virus.recovery_days}', 180, 340, 80, 30, tag='virus_setting', font_size=12, text_suffix=' (days)', border=True, callback=self.CBM.callbacks['recovery'], selectable=True, num_only=True),
+            Text(f'Infection Chance', 20, 380, 120, 30, font_size=14, align='left'),
+            TextBox(f'{self.virus_manager.active_virus.infection_chance}', 180, 380, 80, 30, tag='virus_setting', font_size=12, text_suffix='%', border=True, callback=self.CBM.callbacks['infection'], selectable=True, num_only=True),
+            Text(f'Re-Infection Chance', 20, 420, 150, 30, font_size=14, align='left'),
+            TextBox(f'{self.virus_manager.active_virus.reinfection_chance}', 180, 420, 80, 30, tag='virus_setting', font_size=12, text_suffix='%', border=True, callback=self.CBM.callbacks['reinfection'], selectable=True, num_only=True),
+            Text(f'Fatality Rate', 20, 460, 100, 30, font_size=14, align='left'),
+            TextBox(f'{self.virus_manager.active_virus.fatality_chance}', 180, 460, 80, 30, tag='virus_setting', font_size=12, text_suffix='%', border=True, callback=self.CBM.callbacks['fatality'], selectable=True, num_only=True),
+
+            Text(f'Visualiser Settings', 50, 600, 170, 30, align='centre'),
+            Text(f'Grid Size (NxN)', 20, 640, 100, 30, font_size=14, align='left'),
+            TextBox(f'{self.grid_size}', 180, 640, 80, 30, font_size=12, border=True, callback=self.CBM.callbacks['grid_size'], selectable=True, num_only=True, int_only=True),
+            Text(f'Time Step', 20, 690, 100, 30, font_size=14, align='left'),
+            TextBox(f'{self.time_step}', 180, 690, 80, 30, font_size=12, text_suffix='(ms)', border=True, callback=self.CBM.callbacks['time_step'], selectable=True, num_only=True, int_only=True),
         ]
         self.selected_text_box = None
+
+        col_flip = True
+        x = 20
+        y = 200
+        for i, virus in enumerate(self.virus_manager.diseases):
+            if col_flip:
+                self.ui_elements.append(Button(virus, x, y, 100, 30, font_size=12, border=True, callback=self.CBM.callbacks['select_virus'], callback_rv='text', selectable=True))
+                x += 120
+            else:
+                self.ui_elements.append(Button(virus, x, y, 100, 30, font_size=12, border=True, callback=self.CBM.callbacks['select_virus'], callback_rv='text', selectable=True))
+                y += 40
+                x = 20
+            col_flip = not col_flip
+
 
         # PROFILING
         self.profiler = cProfile.Profile()
@@ -122,13 +145,14 @@ class Visualiser:
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     self.profiler.disable()
-                    continue
                     # self.profiler.print_stats(sort='cumtime')
+                    continue
 
                 elif event.key == pygame.K_SPACE:
                     if self.sort_toggle:
                         np.random.shuffle(self.grid)
                     self.sort_toggle = not self.sort_toggle
+                    self.nodes_updated_since_draw = True
                     continue
 
             elif event.type == pygame.MOUSEBUTTONUP:
@@ -351,92 +375,3 @@ class Visualiser:
 
         for button in self.ui_elements:
             button.update(mpos)
-
-
-    def reset_UI_elements(self, *exclusions):
-        for element in [element for element in self.ui_elements if element not in exclusions]:
-            element.reset_selection()
-
-
-    def callback_pause(self, caller):
-        self.paused = not self.paused
-
-    def callback_reset(self, caller):
-        self.grid = np.array([Node() for _ in range(self.grid_size ** 2)])
-        self.grid_sorted = np.array([Node() for _ in range(self.grid_size ** 2)])
-        self.sort_toggle = False
-        self.nodes_updated_since_draw = True
-
-        self.virus_spread_projection = VirusSpreadProjection(self.virus_manager.active_virus)
-        self.day_limit = DAY_LIMIT
-        self.day = 0
-        self.daily_stats = {}
-        self.nodes = {
-            'healthy': {'nodes': [], 'percentage': 0.00, 'excess': 0, 'needed': 0},
-            'infected': {'nodes': [], 'percentage': 0.00, 'excess': 0, 'needed': 0},
-            'recovered': {'nodes': [], 'percentage': 0.00, 'excess': 0, 'needed': 0},
-            'dead': {'nodes': [], 'percentage': 0.00, 'excess': 0, 'needed': 0},
-            'total': {'nodes': [], 'excess': []}
-        }
-
-        if not self.paused:
-            self.ui_elements[0].click()
-
-        self.reset_UI_elements(caller)
-        self.run()
-
-    def callback_diagnose_days(self, caller, days):
-        new_virus = self.virus_manager.active_virus.copy()
-        new_virus.name = 'Custom'
-        new_virus.diagnose_days = days
-        self.virus_manager.active_virus = new_virus
-
-        self.selected_text_box = None
-        self.callback_reset(None)
-
-    def callback_recovery_days(self, caller, days):
-        new_virus = self.virus_manager.active_virus.copy()
-        new_virus.name = 'Custom'
-        new_virus.recovery_days = days
-        self.virus_manager.active_virus = new_virus
-
-        self.selected_text_box = None
-        self.callback_reset(None)
-
-    def callback_infection_chance(self, caller, chance):
-        new_virus = self.virus_manager.active_virus.copy()
-        new_virus.name = 'Custom'
-        new_virus.infection_chance = chance
-        self.virus_manager.active_virus = new_virus
-
-        self.selected_text_box = None
-        self.callback_reset(None)
-
-    def callback_reinfection_chance(self, caller, chance):
-        new_virus = self.virus_manager.active_virus.copy()
-        new_virus.name = 'Custom'
-        new_virus.reinfection_chance = chance
-        self.virus_manager.active_virus = new_virus
-
-        self.selected_text_box = None
-        self.callback_reset(None)
-
-    def callback_fatality_chance(self, caller, chance):
-        new_virus = self.virus_manager.active_virus.copy()
-        new_virus.name = 'Custom'
-        new_virus.fatality_chance = chance
-        self.virus_manager.active_virus = new_virus
-
-        self.selected_text_box = None
-        self.callback_reset(None)
-
-    def callback_grid_size(self, caller, num):
-        self.grid_size = num
-        self.node_count = self.grid_size * self.grid_size
-        self.node_size = VIS_WINDOW_SIZE // self.grid_size
-
-        self.grid = np.array([Node() for _ in range(num ** 2)])
-        self.grid_sorted = np.array([Node() for _ in range(num ** 2)])
-
-        self.selected_text_box = None
-        self.callback_reset(None)

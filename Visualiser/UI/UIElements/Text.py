@@ -1,16 +1,17 @@
 import pygame
 
-from GUI.UIElements.UIObject import UIObject
+from Visualiser.UI.UIElements.UIObject import UIObject
+from Settings.VisualiserSettings import BG_COLOUR
 
 class Text(UIObject):
 
-    def __init__(self, text, x, y, width, height, ui_group=None, border=False,
-                    colour=(0, 0, 0), hover_colour=(50, 50, 50), selected_colour=(100, 100, 100),
+    def __init__(self, text, x, y, width, height, tag=None, ui_group=None, border=False,
+                    colour=BG_COLOUR, hover_colour=(50, 50, 50), selected_colour=(100, 100, 100),
                     font='Arial', font_size=20, text_colour=(255, 255, 255),
-                    border_colour=(255, 0, 0), border_width=1,
+                    border_colour=(0, 0, 0), border_width=1,
                     selectable=False, toggleable=False, background=False, align='left'):
 
-        super().__init__(text, x, y, width, height, ui_group=ui_group, border=border,
+        super().__init__(text, x, y, width, height, tag=tag, ui_group=ui_group, border=border,
                          colour=colour, hover_colour=hover_colour, selected_colour=selected_colour,
                          font=font, font_size=font_size, text_colour=text_colour,
                          border_colour=border_colour, border_width=border_width,

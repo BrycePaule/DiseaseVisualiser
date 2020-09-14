@@ -1,6 +1,6 @@
-from DiseaseAlgorithm.Population import Population
-from DiseaseAlgorithm.Grapher import Grapher
-from DiseaseAlgorithm.GraphKey import GraphKey
+from SpreadProjection.Population import Population
+from SpreadProjection.Grapher import Grapher
+from SpreadProjection.GraphKey import GraphKey
 from Settings.AlgorithmSettings import DAY_LIMIT
 from Utilities import days_to_readable_date_format, str_fill
 

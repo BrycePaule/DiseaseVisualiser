@@ -1,6 +1,6 @@
 import pygame
 
-from Settings.VisualiserSettings import NODE_COUNT, NODE_SIZE, VIS_WINDOW_SIZE, GRID_COLOUR, ANIMATE_NODES, NODE_BORDER
+from Settings.VisualiserSettings import NODE_SIZE, GRID_COLOUR, ANIMATE_NODES, NODE_BORDER
 from Visualiser.ColourLookup import colour_lookup
 
 from functools import total_ordering
@@ -16,7 +16,7 @@ class Node:
         4 - dead
     """
 
-    def __init__(self, status=0):
+    def __init__(self, status=0, border=NODE_BORDER, animate=ANIMATE_NODES):
         self.status = status
 
         self.size = NODE_SIZE
@@ -25,8 +25,8 @@ class Node:
         self.height = self.surface.get_height()
         self.rect = pygame.Rect(0, 0, self.width, self.height)
 
-        self.border = NODE_BORDER
-        self.animate = ANIMATE_NODES
+        self.border = border
+        self.animate = animate
         self.colour = colour_lookup(self.status)
         self.desired_colour = colour_lookup(self.status)
 

@@ -1,6 +1,6 @@
 import json
 
-from DiseaseAlgorithm.Virus import Virus
+from SpreadProjection.Virus import Virus
 
 class VirusManager:
 

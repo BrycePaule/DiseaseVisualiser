@@ -1,19 +1,23 @@
 import pygame
 
+from Settings.VisualiserSettings import BG_COLOUR
+
+
 class UIObject:
 
-    def __init__(self, text, x, y, width, height, ui_group=None, border=False,
-                    colour=(0, 0, 0), hover_colour=(50, 50, 50), selected_colour=(100, 100, 100),
+    def __init__(self, text, x, y, width, height, tag=None, ui_group=None, border=False,
+                    colour=BG_COLOUR, hover_colour=(50, 50, 50), selected_colour=(100, 100, 100),
                     font='Arial', font_size=20, text_colour=(255, 255, 255),
-                    border_colour=(255, 0, 0), border_width=1,
+                    border_colour=(0, 0, 0), border_selected_colour=(0, 255, 0), border_width=1,
                     selectable=False, toggleable=False):
         self.x = x
         self.y = y
         self.width = width
         self.height = height
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
-        self.surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        self.surface = pygame.Surface((self.width, self.height))
         self.ui_group = ui_group
+        self.tag = tag
 
         self.selectable = selectable
         self.toggleable = toggleable
@@ -29,6 +33,7 @@ class UIObject:
         self.text_colour = text_colour
         self.border = border
         self.border_colour = border_colour
+        self.border_selected_colour = border_selected_colour
         self.border_width = border_width
 
         self.text_font = pygame.font.SysFont(font, font_size)
@@ -41,7 +46,6 @@ class UIObject:
 
     def draw(self, win):
         if self.hovered:
-            self.surface.fill(self.colour)
             self.surface.fill(self.hover_colour)
         elif self.selected:
             self.surface.fill(self.selected_colour)
@@ -55,7 +59,10 @@ class UIObject:
         )
 
         if self.border:
-            pygame.draw.rect(self.surface, self.border_colour, pygame.Rect(0, 0, self.width, self.height), self.border_width)
+            if self.selected:
+                pygame.draw.rect(self.surface, self.border_selected_colour, pygame.Rect(0, 0, self.width, self.height), self.border_width)
+            else:
+                pygame.draw.rect(self.surface, self.border_colour, pygame.Rect(0, 0, self.width, self.height), self.border_width)
 
         win.blit(self.surface, (self.x, self.y))
 
