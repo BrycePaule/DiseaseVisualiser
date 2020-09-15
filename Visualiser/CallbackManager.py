@@ -15,6 +15,7 @@ class CallbackManager:
             'pause': self.callback_pause,
             'reset': self.callback_reset,
 
+            'select_virus': self.callback_select_virus,
             'diagnosis': self.callback_diagnose_days,
             'recovery': self.callback_recovery_days,
             'infection': self.callback_infection_chance,
@@ -24,7 +25,10 @@ class CallbackManager:
             'grid_size': self.callback_grid_size,
             'time_step': self.callback_time_step,
 
-            'select_virus': self.callback_select_virus,
+            'pop_size': self.callback_pop_size,
+            'starting_infections': self.callback_starting_infections,
+            'contacts_undiagnosed': self.callback_contacts_undiagnosed,
+            'contacts_diagnosed': self.callback_contacts_diagnosed,
         }
 
 
@@ -38,7 +42,7 @@ class CallbackManager:
         self.visualiser.sort_toggle = False
         self.visualiser.nodes_updated_since_draw = True
 
-        self.visualiser.virus_spread_projection = VirusSpreadProjection(self.visualiser.virus_manager.active_virus)
+        self.visualiser.virus_spread_projection = VirusSpreadProjection(self.visualiser.virus_manager.active_virus, self.visualiser.projection_settings)
         self.visualiser.day = 0
         self.visualiser.daily_stats = {}
         self.visualiser.nodes = {
@@ -182,5 +186,50 @@ class CallbackManager:
             return
 
         self.visualiser.virus_manager.active_virus = self.visualiser.virus_manager.diseases[virus]
+        self.callback_reset()
 
+
+    def callback_pop_size(self, *args):
+        try:
+            pop_size = args[0]
+        except ValueError:
+            return
+
+        if pop_size > 10000:
+            self.visualiser.animate_nodes = False
+        else:
+            self.visualiser.animate_nodes = True
+
+
+        self.visualiser.projection_settings.pop_size = pop_size
+        self.callback_reset()
+
+
+    def callback_starting_infections(self, *args):
+        try:
+            starting_infections = args[0]
+        except ValueError:
+            return
+
+        self.visualiser.projection_settings.starting_infections = starting_infections
+        self.callback_reset()
+
+
+    def callback_contacts_undiagnosed(self, *args):
+        try:
+            contacts = args[0]
+        except ValueError:
+            return
+
+        self.visualiser.projection_settings.contacts_undiag = contacts
+        self.callback_reset()
+
+
+    def callback_contacts_diagnosed(self, *args):
+        try:
+            contacts = args[0]
+        except ValueError:
+            return
+
+        self.visualiser.projection_settings.contacts_diag = contacts
         self.callback_reset()

@@ -1,3 +1,4 @@
 from Visualiser.Visualiser import Visualiser
 
-Visualiser().run()
+if __name__ == '__main__':
+    Visualiser().run()

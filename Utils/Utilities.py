@@ -1,6 +1,7 @@
 import random
 import time
 
+
 def roll(chance):
     throw = int(10000 * random.random())
     if throw < chance * 100:

@@ -1,18 +1,18 @@
 import random
 import numpy as np
 
-from Settings.AlgorithmSettings import POPULATION_SIZE, INFECTION_CHANCE, SECONDARY_INFECTION_CHANCE
+from Settings.AlgorithmSettings import POPULATION_SIZE
 from SpreadProjection.Person import Person
 
-from Utilities import roll
+from Utils.Utilities import roll
 
 
 class Population:
 
-    def __init__(self, virus):
+    def __init__(self, virus, size):
         self.index = 0
         self.virus = virus
-        self.size = POPULATION_SIZE
+        self.size = size
         self.people = np.array([Person(self, self.virus) for _ in range(self.size)])
         self.virus_stats = {
             'healthy': self.size,
@@ -62,6 +62,7 @@ class Population:
                             contact.infect()
 
             person.pass_day()
+
 
     def __iter__(self):
         self.index = 0

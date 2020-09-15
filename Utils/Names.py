@@ -2,7 +2,7 @@ import random
 import numpy as np
 
 names = []
-with open('./Settings/names.txt', mode='r') as f:
+with open('./Utils/names.txt', mode='r') as f:
     for line in f:
         names.append(line.strip())
     names = np.array(names)

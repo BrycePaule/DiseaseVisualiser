@@ -1,19 +1,25 @@
 from SpreadProjection.Population import Population
 from SpreadProjection.Grapher import Grapher
 from SpreadProjection.GraphKey import GraphKey
-from Settings.AlgorithmSettings import DAY_LIMIT
-from Utilities import days_to_readable_date_format, str_fill
+from Utils.Utilities import days_to_readable_date_format, str_fill
+from Settings.ProjectionSettingsPackage import ProjectionSettingsPackage
 
 class VirusSpreadProjection:
 
-    def __init__(self, virus):
+    def __init__(self, virus, settings=ProjectionSettingsPackage()):
         self.virus = virus
-        self.population = Population(self.virus)
+        self.settings = settings
+        self.population = Population(self.virus, self.settings.pop_size)
         self.daily_stats = {}
 
         self.grapher = Grapher(self.daily_stats)
 
         self.finished = False
+
+
+    def infect_initial(self):
+        for i in range(self.settings.starting_infections):
+            self.population.people[i].infect()
 
 
     def pass_day(self, day, print_stats=False):

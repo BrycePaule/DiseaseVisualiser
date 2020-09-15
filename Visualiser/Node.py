@@ -1,7 +1,7 @@
 import pygame
 
 from Settings.VisualiserSettings import NODE_SIZE, GRID_COLOUR, ANIMATE_NODES, NODE_BORDER
-from Visualiser.ColourLookup import colour_lookup
+from Utils.ColourLookup import colour_lookup
 
 from functools import total_ordering
 

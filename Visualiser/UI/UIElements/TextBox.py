@@ -94,8 +94,10 @@ class TextBox(UIObject):
 
         if float(self.text) % 1 == 0:
             self.callback(int(self.text))
-        else:
+        elif float(self.text) % 1 != 0:
             self.callback(float(self.text))
+        else:
+            self.callback(self.text)
 
 
     def check_user_input(self):
