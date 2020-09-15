@@ -16,10 +16,10 @@ class Node:
         4 - dead
     """
 
-    def __init__(self, status=0, border=NODE_BORDER, animate=ANIMATE_NODES):
+    def __init__(self, status=0, border=NODE_BORDER, animate=ANIMATE_NODES, size=NODE_SIZE):
         self.status = status
 
-        self.size = NODE_SIZE
+        self.size = size
         self.surface = pygame.Surface((self.size, self.size))
         self.width = self.surface.get_width()
         self.height = self.surface.get_height()

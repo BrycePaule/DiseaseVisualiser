@@ -37,8 +37,8 @@ class CallbackManager:
 
 
     def callback_reset(self, *args):
-        self.visualiser.grid = np.array([Node(border=self.visualiser.node_border, animate=self.visualiser.animate_nodes) for _ in range(self.visualiser.grid_size ** 2)])
-        self.visualiser.grid_sorted = np.array([Node(border=self.visualiser.node_border, animate=self.visualiser.animate_nodes) for _ in range(self.visualiser.grid_size ** 2)])
+        self.visualiser.grid = np.array([Node(border=self.visualiser.node_border, animate=self.visualiser.animate_nodes, size=self.visualiser.node_size) for _ in range(self.visualiser.grid_size ** 2)])
+        self.visualiser.grid_sorted = np.array([Node(border=self.visualiser.node_border, animate=self.visualiser.animate_nodes, size=self.visualiser.node_size) for _ in range(self.visualiser.grid_size ** 2)])
         self.visualiser.sort_toggle = False
         self.visualiser.nodes_updated_since_draw = True
 
