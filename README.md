@@ -1,13 +1,16 @@
 # DiseaseVisualiser
 
-> Inspired by the onset of COVID-19 and the challenges it brings, this is a fully customisable tool that helps visualise how a contageous virus moves through a population.
+> Inspired by the onset of COVID-19 and the challenges it brings, this customisable tool helps visualise how a contageous virus moves through a population.
 
 ---
 
 # Usage
 
-## Hotkeys
-* `SPACE` = change view mode
+### Run
+`C:\YOUR\DIRECTORY\HERE> python main.py`
+
+### Hotkeys
+* `SPACE` = switch view mode
 * `ESC` = exit
 
 ---
@@ -19,16 +22,12 @@
 ---
 
 # Features
-- Preset virus' for comparison, ranging from the Swine flu epidemic to the common cold
-
-![Virus List](/Images/virus_list.png) 
-
-- Multiple visual modes for easier visual clarity, easy to switch back and forth
+- Preset virus' for comparison, ranging from the Swine flu epidemic to the common cold.
+- Extensive customisability allows you to edit the virus' behaviour, how the population behaves around the virus and how the visualiser displays the spread.
+- Multiple visual modes for readability and easier visual clarity (can switch on the fly).
 
 Scatter                                 | Sorted
 :--------------------------------------:|:--------------------------------------:
 <img src="/Images/scatter.png" width=250 /> | <img src="/Images/sorted.png" width=250 />
 
-- Extensive customisability allows you to edit the virus' behaviour, how the population behaves around the virus and how the visualiser displays the spread.
-
-<img src="/Images/settings.png" width=500 />
+- Virus spread can be graphed on any daily interval, supplementing the visualiser display
