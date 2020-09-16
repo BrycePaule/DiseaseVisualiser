@@ -1,6 +1,6 @@
 # DiseaseVisualiser
 
-> Inspired by the onset of COVID-19 and the challenges it brings, this customisable tool helps visualise how a contageous virus moves through a population.
+Inspired by the onset of COVID-19 and the challenges it brings, this customisable tool helps visualise how a contageous virus moves through a population.
 
 ---
 
@@ -10,8 +10,8 @@
 `C:\YOUR\DIRECTORY\HERE> python main.py`
 
 ### Hotkeys
-* `SPACE` = switch view mode
-* `ESC` = exit
+* <kbd> SPACE </kbd> = switch view mode
+* <kbd> ESC </kbd> = exit
 
 ---
 
