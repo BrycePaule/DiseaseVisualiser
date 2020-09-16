@@ -113,7 +113,7 @@ class Visualiser:
         ui_elements.append(Text(f'Contacts (diagnosed)', 20, 680, 140, 30, font_size=14, align='left'))
         ui_elements.append(TextBox(f'{self.projection_settings.contacts_diag}', 180, 680, 80, 30, tag='projection_setting', font_size=12, text_suffix=' ( p/day)', border=True, callback=self.CBM.callbacks['contacts_diagnosed'], selectable=True, num_only=True, int_only=True))
         ui_elements.append(Text(f'Day Limit', 20, 715, 100, 30, font_size=14, align='left'))
-        ui_elements.append(TextBox(f'{self.projection_settings.day_limit}', 180, 715, 80, 30, tag='projection_setting', font_size=12, border=True, callback=self.CBM.callbacks['day_limit'], selectable=True, num_only=True, int_only=True))
+        ui_elements.append(TextBox(f'{self.day_limit}', 180, 715, 80, 30, tag='projection_setting', font_size=12, border=True, callback=self.CBM.callbacks['day_limit'], selectable=True, num_only=True, int_only=True))
 
         ui_elements.append(Text(f'Visualiser Settings', 50, 770, 170, 30, align='centre'))
         ui_elements.append(Text(f'Grid Size (NxN)', 20, 820, 100, 30, font_size=14, align='left'))
@@ -199,13 +199,17 @@ class Visualiser:
 
         self.virus_spread_projection.infect_initial()
 
-        while self.day <= self.day_limit:
+        while True:
             self.clock.tick(FPS)
             self.events()
             self.update_UI()
 
             if not self.virus_spread_projection.finished:
                 if not self.paused:
+
+                    if self.day >= self.day_limit:
+                        self.CBM.callbacks['pause']()
+
                     if self.check_day_has_passed():
                         if SCALE_ANIM_WITH_TIME and self.animate_nodes:
                             if self.day < TIMED_DAYS:
@@ -222,6 +226,7 @@ class Visualiser:
 
                         self.nodes_update()
                         self.day += 1
+
 
             self.draw()
 

@@ -235,11 +235,12 @@ class CallbackManager:
         self.visualiser.projection_settings.contacts_diag = contacts
         self.callback_reset()
 
+
     def callback_day_limit(self, *args):
         try:
             day_limit = args[0]
         except ValueError:
             return
 
-        self.visualiser.projection_settings.contacts_diag = day_limit
+        self.visualiser.day_limit = day_limit
         self.callback_reset()
