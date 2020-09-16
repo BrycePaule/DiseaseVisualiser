@@ -1,7 +1,7 @@
 from Utils.Names import get_random_name
 from Utils.Utilities import roll, status_to_text
 
-from Settings.AlgorithmSettings import CONTACTS_PER_DAY_KNOWN, CONTACTS_PER_DAY_UNKNOWN_CARRIER
+from Settings.ProjectionSettings import CONTACTS_PER_DAY_KNOWN, CONTACTS_PER_DAY_UNKNOWN_CARRIER
 
 
 class Person:

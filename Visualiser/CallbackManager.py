@@ -29,6 +29,7 @@ class CallbackManager:
             'starting_infections': self.callback_starting_infections,
             'contacts_undiagnosed': self.callback_contacts_undiagnosed,
             'contacts_diagnosed': self.callback_contacts_diagnosed,
+            'day_limit': self.callback_day_limit,
         }
 
 
@@ -232,4 +233,13 @@ class CallbackManager:
             return
 
         self.visualiser.projection_settings.contacts_diag = contacts
+        self.callback_reset()
+
+    def callback_day_limit(self, *args):
+        try:
+            day_limit = args[0]
+        except ValueError:
+            return
+
+        self.visualiser.projection_settings.contacts_diag = day_limit
         self.callback_reset()

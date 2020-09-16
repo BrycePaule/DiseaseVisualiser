@@ -13,7 +13,7 @@ from Settings.VisualiserSettings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from Settings.VisualiserSettings import VIS_WINDOW_SIZE, VIS_NODE_WIDTH
 from Settings.VisualiserSettings import MIN_ALGORITHM_CALL_STEP, TIMED_DAYS, ANIMATE_NODES, NODE_BORDER
 from Settings.VisualiserSettings import BG_COLOUR, SCALE_ANIM_WITH_TIME
-from Settings.AlgorithmSettings import DAY_LIMIT
+from Settings.ProjectionSettings import DAY_LIMIT
 
 from Visualiser.UI.UIElements.Button import Button
 from Visualiser.UI.UIElements.TextBox import TextBox
@@ -81,61 +81,65 @@ class Visualiser:
 
 
     """ SETUP """
+    def build_UI(self):
+        ui_elements = []
+
+        ui_elements.append(Button('Start', 20, 110, 100, 30, tag='runtime', border=True, hover_colour=(128, 185, 105), callback=self.CBM.callbacks['pause'], toggleable=True, alt_text='Pause'))
+        ui_elements.append(Button('Reset', 140, 110, 100, 30, tag='runtime', border=True, hover_colour=(200, 90, 90), callback=self.CBM.callbacks['reset']))
+
+        ui_elements.append(Text(f'Virus', 65, 170, 130, 30, align='centre'))
+        for button in self.create_virus_buttons():
+            ui_elements.append(button)
+
+        ui_elements.append(Text(f'Virus Settings', 65, 300, 130, 30, align='centre'))
+        ui_elements.append(Text(f'Diagnosis Time', 20, 340, 115, 30, font_size=14, align='left'))
+        ui_elements.append(TextBox(f'{self.virus_manager.active_virus.diagnose_days}', 180, 340, 80, 30, tag='virus_setting', font_size=12, text_suffix=' (days)', border=True, callback=self.CBM.callbacks['diagnosis'], selectable=True, num_only=True))
+        ui_elements.append(Text(f'Recovery Time', 20, 375, 110, 30, font_size=14, align='left'))
+        ui_elements.append(TextBox(f'{self.virus_manager.active_virus.recovery_days}', 180, 375, 80, 30, tag='virus_setting', font_size=12, text_suffix=' (days)', border=True, callback=self.CBM.callbacks['recovery'], selectable=True, num_only=True))
+        ui_elements.append(Text(f'Infection Chance', 20, 410, 120, 30, font_size=14, align='left'))
+        ui_elements.append(TextBox(f'{self.virus_manager.active_virus.infection_chance}', 180, 410, 80, 30, tag='virus_setting', font_size=12, text_suffix='%', border=True, callback=self.CBM.callbacks['infection'], selectable=True, num_only=True))
+        ui_elements.append(Text(f'Re-Infection Chance', 20, 445, 150, 30, font_size=14, align='left'))
+        ui_elements.append(TextBox(f'{self.virus_manager.active_virus.reinfection_chance}', 180, 445, 80, 30, tag='virus_setting', font_size=12, text_suffix='%', border=True, callback=self.CBM.callbacks['reinfection'], selectable=True, num_only=True))
+        ui_elements.append(Text(f'Fatality Rate', 20, 480, 100, 30, font_size=14, align='left'))
+        ui_elements.append(TextBox(f'{self.virus_manager.active_virus.fatality_chance}', 180, 480, 80, 30, tag='virus_setting', font_size=12, text_suffix='%', border=True, callback=self.CBM.callbacks['fatality'], selectable=True, num_only=True))
+
+        ui_elements.append(Text(f'Projection Settings', 55, 535, 165, 30, align='centre'))
+        ui_elements.append(Text(f'Population Size', 20, 575, 100, 30, font_size=14, align='left'))
+        ui_elements.append(TextBox(f'{self.projection_settings.pop_size}', 180, 575, 80, 30, tag='projection_setting', font_size=12, border=True, callback=self.CBM.callbacks['pop_size'], selectable=True, num_only=True, int_only=True))
+        ui_elements.append(Text(f'Initial Infections', 20, 610, 120, 30, font_size=14, align='left'))
+        ui_elements.append(TextBox(f'{self.projection_settings.starting_infections}', 180, 610, 80, 30, tag='projection_setting', font_size=12, border=True, callback=self.CBM.callbacks['starting_infections'], selectable=True, num_only=True, int_only=True))
+        ui_elements.append(Text(f'Contacts (undiagnosed)', 20, 645, 155, 30, font_size=14, align='left'))
+        ui_elements.append(TextBox(f'{self.projection_settings.contacts_undiag}', 180, 645, 80, 30, tag='projection_setting', font_size=12, text_suffix=' ( p/day)', border=True, callback=self.CBM.callbacks['contacts_undiagnosed'], selectable=True, num_only=True, int_only=True))
+        ui_elements.append(Text(f'Contacts (diagnosed)', 20, 680, 140, 30, font_size=14, align='left'))
+        ui_elements.append(TextBox(f'{self.projection_settings.contacts_diag}', 180, 680, 80, 30, tag='projection_setting', font_size=12, text_suffix=' ( p/day)', border=True, callback=self.CBM.callbacks['contacts_diagnosed'], selectable=True, num_only=True, int_only=True))
+        ui_elements.append(Text(f'Day Limit', 20, 715, 100, 30, font_size=14, align='left'))
+        ui_elements.append(TextBox(f'{self.projection_settings.day_limit}', 180, 715, 80, 30, tag='projection_setting', font_size=12, border=True, callback=self.CBM.callbacks['day_limit'], selectable=True, num_only=True, int_only=True))
+
+        ui_elements.append(Text(f'Visualiser Settings', 50, 770, 170, 30, align='centre'))
+        ui_elements.append(Text(f'Grid Size (NxN)', 20, 820, 100, 30, font_size=14, align='left'))
+        ui_elements.append(TextBox(f'{self.grid_size}', 180, 820, 80, 30, tag='vis_setting', font_size=12, border=True, callback=self.CBM.callbacks['grid_size'], selectable=True, num_only=True, int_only=True))
+        ui_elements.append(Text(f'Time Step', 20, 855, 100, 30, font_size=14, align='left'))
+        ui_elements.append(TextBox(f'{self.time_step}', 180, 855, 80, 30, tag='vis_setting', font_size=12, text_suffix=' (ms)', border=True, callback=self.CBM.callbacks['time_step'], selectable=True, num_only=True, int_only=True))
+
+        return ui_elements
+
+
     def create_virus_buttons(self):
         buttons = []
         left_col = True
-        y = 200
+        y = 210
 
         for virus in self.virus_manager.diseases:
             if left_col:
-                buttons.append(Button(virus, 20, y, 100, 30, tag='virus', font_size=12, border=True, callback=self.CBM.callbacks['select_virus'], callback_rv='text', selectable=True))
+                buttons.append(Button(virus, 20, y, 100, 30, tag='virus', font_size=12, border=True, callback=self.CBM.callbacks['select_virus'], callback_rv='text'))
             else:
-                buttons.append(Button(virus, 140, y, 100, 30, tag='virus', font_size=12, border=True, callback=self.CBM.callbacks['select_virus'], callback_rv='text', selectable=True))
-                y += 40
+                buttons.append(Button(virus, 140, y, 100, 30, tag='virus', font_size=12, border=True, callback=self.CBM.callbacks['select_virus'], callback_rv='text'))
+                y += 35
 
             left_col = not left_col
 
         return buttons
 
-
-    def build_UI(self):
-        ui_elements = []
-
-        ui_elements.append(Button('Start', 20, 90, 100, 30, tag='runtime', border=True, hover_colour=(128, 185, 105), callback=self.CBM.callbacks['pause'], toggleable=True, alt_text='Pause'))
-        ui_elements.append(Button('Reset', 140, 90, 100, 30, tag='runtime', border=True, hover_colour=(200, 90, 90), callback=self.CBM.callbacks['reset']))
-
-        ui_elements.append(Text(f'Virus', 65, 160, 130, 30, align='centre'))
-        for button in self.create_virus_buttons():
-            ui_elements.append(button)
-
-        ui_elements.append(Text(f'Virus Settings', 65, 260, 130, 30, align='centre'))
-        ui_elements.append(Text(f'Diagnosis Time', 20, 300, 115, 30, font_size=14, align='left'))
-        ui_elements.append(TextBox(f'{self.virus_manager.active_virus.diagnose_days}', 180, 300, 80, 30, tag='virus_setting', font_size=12, text_suffix=' (days)', border=True, callback=self.CBM.callbacks['diagnosis'], selectable=True, num_only=True))
-        ui_elements.append(Text(f'Recovery Time', 20, 340, 110, 30, font_size=14, align='left'))
-        ui_elements.append(TextBox(f'{self.virus_manager.active_virus.recovery_days}', 180, 340, 80, 30, tag='virus_setting', font_size=12, text_suffix=' (days)', border=True, callback=self.CBM.callbacks['recovery'], selectable=True, num_only=True))
-        ui_elements.append(Text(f'Infection Chance', 20, 380, 120, 30, font_size=14, align='left'))
-        ui_elements.append(TextBox(f'{self.virus_manager.active_virus.infection_chance}', 180, 380, 80, 30, tag='virus_setting', font_size=12, text_suffix='%', border=True, callback=self.CBM.callbacks['infection'], selectable=True, num_only=True))
-        ui_elements.append(Text(f'Re-Infection Chance', 20, 420, 150, 30, font_size=14, align='left'))
-        ui_elements.append(TextBox(f'{self.virus_manager.active_virus.reinfection_chance}', 180, 420, 80, 30, tag='virus_setting', font_size=12, text_suffix='%', border=True, callback=self.CBM.callbacks['reinfection'], selectable=True, num_only=True))
-        ui_elements.append(Text(f'Fatality Rate', 20, 460, 100, 30, font_size=14, align='left'))
-        ui_elements.append(TextBox(f'{self.virus_manager.active_virus.fatality_chance}', 180, 460, 80, 30, tag='virus_setting', font_size=12, text_suffix='%', border=True, callback=self.CBM.callbacks['fatality'], selectable=True, num_only=True))
-        ui_elements.append(Text(f'Visualiser Settings', 50, 600, 170, 30, align='centre'))
-        ui_elements.append(Text(f'Grid Size (NxN)', 20, 640, 100, 30, font_size=14, align='left'))
-        ui_elements.append(TextBox(f'{self.grid_size}', 180, 640, 80, 30, tag='vis_setting', font_size=12, border=True, callback=self.CBM.callbacks['grid_size'], selectable=True, num_only=True, int_only=True))
-        ui_elements.append(Text(f'Time Step', 20, 690, 100, 30, font_size=14, align='left'))
-        ui_elements.append(TextBox(f'{self.time_step}', 180, 690, 80, 30, tag='vis_setting', font_size=12, text_suffix='(ms)', border=True, callback=self.CBM.callbacks['time_step'], selectable=True, num_only=True, int_only=True))
-
-        ui_elements.append(Text(f'Projection Settings', 20, 740, 165, 30, align='centre'))
-        ui_elements.append(Text(f'Population Size', 20, 790, 100, 30, font_size=14, align='left'))
-        ui_elements.append(TextBox(f'{self.projection_settings.pop_size}', 180, 790, 80, 30, tag='projection_setting', font_size=12, border=True, callback=self.CBM.callbacks['pop_size'], selectable=True, num_only=True, int_only=True))
-        ui_elements.append(Text(f'Initial Infections', 20, 830, 120, 30, font_size=14, align='left'))
-        ui_elements.append(TextBox(f'{self.projection_settings.starting_infections}', 180, 830, 80, 30, tag='projection_setting', font_size=12, border=True, callback=self.CBM.callbacks['starting_infections'], selectable=True, num_only=True, int_only=True))
-        ui_elements.append(Text(f'Daily Contacts (undiagnosed)', 20, 870, 190, 30, font_size=14, align='left'))
-        ui_elements.append(TextBox(f'{self.projection_settings.contacts_undiag}', 180, 870, 80, 30, tag='projection_setting', font_size=12, border=True, callback=self.CBM.callbacks['contacts_undiagnosed'], selectable=True, num_only=True, int_only=True))
-        ui_elements.append(Text(f'Daily Contacts (diagnosed)', 20, 910, 170, 30, font_size=14, align='left'))
-        ui_elements.append(TextBox(f'{self.projection_settings.contacts_diag}', 180, 910, 80, 30, tag='projection_setting', font_size=12, border=True, callback=self.CBM.callbacks['contacts_diagnosed'], selectable=True, num_only=True, int_only=True))
-
-        return ui_elements
 
     """ RUNTIME """
     def events(self):

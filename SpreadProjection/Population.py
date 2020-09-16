@@ -1,7 +1,6 @@
 import random
 import numpy as np
 
-from Settings.AlgorithmSettings import POPULATION_SIZE
 from SpreadProjection.Person import Person
 
 from Utils.Utilities import roll
@@ -9,7 +8,7 @@ from Utils.Utilities import roll
 
 class Population:
 
-    def __init__(self, virus, size):
+    def __init__(self, virus, size, ):
         self.index = 0
         self.virus = virus
         self.size = size

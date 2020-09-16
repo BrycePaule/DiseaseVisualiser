@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-from Settings.AlgorithmSettings import SAVE_LOCATION, SAVE_PREFIX
+from Settings.ProjectionSettings import SAVE_LOCATION, SAVE_PREFIX
 
 class Grapher:
 
