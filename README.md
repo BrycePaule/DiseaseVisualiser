@@ -4,11 +4,11 @@ Inspired by the onset of COVID-19 and the challenges it brings, this is a fully 
 
 ### Features
 - Preset virus' for comparison, ranging from the Swine flu epidemic to the common cold
-![](/images/virus_list.png)
+![Virus List](/images/virus_list.png)
 - Multiple visual modes for easier visual clarity, easy to switch back and forth
 
-Scatter                     |  Sorted
-:--------------------------:|:--------------------------:
-![](/images/scatter.png)    | ![](/images/sorted.png)
+Scatter                                 | Sorted
+:--------------------------------------:|:--------------------------------------:
+![Scatter Display](/Images/scatter.png) | ![Sorted Display](/Images/sorted.png)
 
 - Extensive customisability allows you to edit the virus' behaviour, how the population behaves with diagnosed / undiagnosed cases and how the visualiser displays the virus spread.
