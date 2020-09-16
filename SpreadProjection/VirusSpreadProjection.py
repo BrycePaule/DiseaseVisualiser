@@ -1,6 +1,6 @@
 from SpreadProjection.Population import Population
-from SpreadProjection.Grapher import Grapher
-from SpreadProjection.GraphKey import GraphKey
+from Grapher.Grapher import Grapher
+from Grapher.GraphKey import GraphKey
 from Utils.Utilities import days_to_readable_date_format, str_fill
 from Settings.ProjectionSettingsPackage import ProjectionSettingsPackage
 
