@@ -341,6 +341,13 @@ class Visualiser:
 
 
     def nodes_calc_visualiser_vs_projection_diff(self):
+
+        """
+        Calculates the difference between the Projection spread, and visualiser
+        spread - (there will most likely always be some difference here given
+        Visualiser has MUCH less nodes than Projection does people
+        """
+
         node_types = [
             ('healthy', 'healthy_percentage'),
             ('infected', 'infected_percentage'),
@@ -362,6 +369,8 @@ class Visualiser:
 
 
     def nodes_convert_excesses(self):
+
+
         for node in self.nodes['total']['excess']:
             if self.nodes['dead']['needed'] > 0:
                 node.convert_dead()
