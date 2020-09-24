@@ -196,7 +196,6 @@ class Visualiser:
 
     def run(self):
         self.profiler.enable()
-
         self.virus_spread_projection.infect_initial()
 
         while True:
@@ -369,8 +368,6 @@ class Visualiser:
 
 
     def nodes_convert_excesses(self):
-
-
         for node in self.nodes['total']['excess']:
             if self.nodes['dead']['needed'] > 0:
                 node.convert_dead()
