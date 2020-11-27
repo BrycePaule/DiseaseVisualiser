@@ -1,4 +1,4 @@
-# DiseaseVisualiser
+# Virus-Visualiser
 
 Inspired by the onset of COVID-19 and the challenges it brings, this customisable tool helps visualise how a contageous virus moves through a population.
 
