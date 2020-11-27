@@ -22,7 +22,7 @@ Inspired by the onset of COVID-19 and the challenges it brings, this customisabl
 ---
 
 # Features
-- Preset virus' for comparison, ranging from the Swine flu epidemic to the common cold.
+- Preset virus' for comparison, ranging from Swine flu to the common cold.
 - Extensive customisability allows you to edit the virus' behaviour, how the population behaves around the virus and how the visualiser displays the spread.
 - Multiple visual modes for readability and easier visual clarity (can switch on the fly).
 
